@@ -12,7 +12,9 @@ def article_text(article: Article) -> str:
     return f"{article.normalized_title} {article.normalized_summary}".strip()
 
 
-def find_exact_cluster(session: Session, article: Article) -> StoryCluster | None:
+def find_exact_cluster(
+    session: Session, article: Article
+) -> StoryCluster | None:
     duplicate = session.scalar(
         select(Article)
         .join(ClusterArticle, ClusterArticle.article_id == Article.id)
@@ -49,7 +51,9 @@ def find_fuzzy_cluster(
     best_score = 0.0
     for candidate in candidates:
         score = float(
-            fuzz.token_set_ratio(article_text(article), article_text(candidate))
+            fuzz.token_set_ratio(
+                article_text(article), article_text(candidate)
+            )
         )
         if score > best_score:
             best_article = candidate

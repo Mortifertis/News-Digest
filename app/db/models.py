@@ -26,7 +26,9 @@ class NewsSource(Base):
     homepage_url: Mapped[str] = mapped_column(String(500))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    feeds: Mapped[list["FeedSubscription"]] = relationship(back_populates="source")
+    feeds: Mapped[list["FeedSubscription"]] = relationship(
+        back_populates="source"
+    )
     articles: Mapped[list["Article"]] = relationship(back_populates="source")
 
 
@@ -40,7 +42,15 @@ class FeedSubscription(Base):
     category: Mapped[str] = mapped_column(String(80))
     language: Mapped[str] = mapped_column(String(12))
     is_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
-    last_fetched_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_fetch_status: Mapped[str] = mapped_column(String(20), default="never")
+    last_fetch_error: Mapped[str | None] = mapped_column(Text)
+    last_http_status: Mapped[int | None] = mapped_column()
+    last_entries_count: Mapped[int] = mapped_column(default=0)
+    last_new_articles_count: Mapped[int] = mapped_column(default=0)
+    last_skipped_articles_count: Mapped[int] = mapped_column(default=0)
+    last_fetched_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
 
     source: Mapped[NewsSource] = relationship(back_populates="feeds")
     articles: Mapped[list["Article"]] = relationship(back_populates="feed")
@@ -57,7 +67,9 @@ class Article(Base):
     title: Mapped[str] = mapped_column(String(700))
     summary: Mapped[str] = mapped_column(Text, default="")
     canonical_url: Mapped[str] = mapped_column(String(700), index=True)
-    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    published_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
     language: Mapped[str] = mapped_column(String(12))
     normalized_title: Mapped[str] = mapped_column(String(700), index=True)
     normalized_summary: Mapped[str] = mapped_column(Text, default="")
@@ -81,7 +93,9 @@ class StoryCluster(Base):
     first_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
-    lead_article: Mapped[Article] = relationship(foreign_keys=[lead_article_id])
+    lead_article: Mapped[Article] = relationship(
+        foreign_keys=[lead_article_id]
+    )
     articles: Mapped[list["ClusterArticle"]] = relationship(
         back_populates="cluster", cascade="all, delete-orphan"
     )
@@ -93,7 +107,9 @@ class ClusterArticle(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     cluster_id: Mapped[int] = mapped_column(ForeignKey("story_clusters.id"))
-    article_id: Mapped[int] = mapped_column(ForeignKey("articles.id"), unique=True)
+    article_id: Mapped[int] = mapped_column(
+        ForeignKey("articles.id"), unique=True
+    )
     similarity_score: Mapped[float] = mapped_column(Float)
     match_type: Mapped[str] = mapped_column(String(40))
 

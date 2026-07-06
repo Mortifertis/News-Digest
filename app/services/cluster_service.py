@@ -30,7 +30,11 @@ def cluster_articles(session: Session) -> int:
                 cluster, score = fuzzy
                 match_type = "fuzzy_title"
             else:
-                seen = article.published_at or article.created_at or datetime.now(UTC)
+                seen = (
+                    article.published_at
+                    or article.created_at
+                    or datetime.now(UTC)
+                )
                 cluster = StoryCluster(
                     title=article.title,
                     lead_article_id=article.id,
@@ -42,7 +46,9 @@ def cluster_articles(session: Session) -> int:
                 session.flush()
                 score = 100.0
                 match_type = "exact_hash"
-        seen_at = article.published_at or article.created_at or datetime.now(UTC)
+        seen_at = (
+            article.published_at or article.created_at or datetime.now(UTC)
+        )
         cluster.first_seen_at = min(cluster.first_seen_at, seen_at)
         cluster.last_seen_at = max(cluster.last_seen_at, seen_at)
         session.add(

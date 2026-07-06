@@ -97,3 +97,144 @@ new cluster is created.
 - Add Alembic migrations before changing the schema frequently.
 - Add scheduled fetches and better operational logging.
 - Add source/feed management forms in the web UI.
+## POC validation
+
+This prototype is intentionally limited to FastAPI, SQLite, local CLI commands,
+and RSS metadata. It does not use Docker, PostgreSQL, Alembic, authentication,
+background workers, LLM summaries, or full article scraping.
+
+### Prepare or update the SQLite schema
+
+Run this after pulling changes. It creates the tables and safely adds the POC
+fetch-status columns to an existing SQLite database when they are missing:
+
+```bash
+python -m app.db.init_db
+python -m app.services.seed_sources
+```
+
+If the local POC database is disposable, the simplest full reset is to stop the
+app, delete `morti_news_digest.db`, and run the two commands above again. To keep
+configured sources and feeds while clearing imported story data, use:
+
+```bash
+python -m app.cli reset-data
+```
+
+### Live RSS test
+
+Run a live fetch, cluster the imported articles, and inspect statistics:
+
+```bash
+python -m app.cli fetch
+python -m app.cli cluster
+python -m app.cli stats
+```
+
+`fetch` prints one diagnostic block per feed: source, feed title, URL, HTTP
+status when available, parsed entries, saved articles, skipped articles, final
+status, and error text for failed feeds. A broken feed must be visible in this
+output and must not stop later feeds from being fetched.
+
+Expected shape of live output:
+
+```text
+------------------------------------------------------------------------
+Source: The Guardian
+Feed: The Guardian World
+URL: https://www.theguardian.com/world/rss
+HTTP status: 200
+Parsed entries: 50
+New articles saved: 50
+Skipped existing articles: 0
+Status: success
+Saved 50 new articles.
+```
+
+Failed feeds should look similar but with `Status: failed` and an `Error:` line.
+
+### Offline demo clustering test
+
+Use the deterministic local fixture when network/VPN conditions make live RSS
+unreliable:
+
+```bash
+python -m app.cli load-demo
+```
+
+By default this clears article and cluster tables, keeps sources and feeds, loads
+`fixtures/demo_articles.json`, and runs clustering. Use `--no-reset` only when
+you intentionally want to append missing demo articles to existing data.
+
+Expected demo stats should show 12 articles, fewer clusters than articles, at
+least two multi-article clusters, and unrelated demo stories remaining as
+singletons:
+
+```text
+Loaded 12 demo articles.
+Total articles: 12
+Total clusters: 8
+Multi-article clusters count: 2
+```
+
+### Refetch shortcut
+
+After validating feed setup, run the whole live loop with:
+
+```bash
+python -m app.cli refetch
+```
+
+This runs `fetch`, `cluster`, and `stats` in sequence.
+
+### Manual review page
+
+Start the app and open `/review`:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+The review page orders clusters by article count descending and shows the cluster
+title, language, article count, unique source count, article titles, source
+names, match type, similarity score, and original URLs. Use it to inspect false
+positives and false negatives. The top navigation includes a Review link.
+
+The `/feed` page remains the lightweight digest view. Its cards now show a
+language badge, article count, unique source count, source names, first/last seen
+timestamps, the original lead-article link, and a cluster-details link.
+
+### Interpreting stats
+
+`python -m app.cli stats` prints totals for sources, feeds, enabled feeds,
+successful feeds, failed feeds, articles, and clusters. It also breaks down
+articles by source and language, clusters by language, singleton clusters,
+multi-article clusters, multi-source clusters, average articles per cluster, and
+the top 10 largest clusters.
+
+Useful signals:
+
+- `successful feeds` and `failed feeds` reveal source availability.
+- `articles per source` helps detect one source dominating the dataset.
+- `singleton clusters count` versus `multi-article clusters count` shows whether
+  clustering is combining related stories.
+- `multi-source clusters count` shows whether the digest is finding cross-source
+  coverage.
+- `top 10 largest clusters` should be reviewed for false positives.
+
+### Go/no-go criteria
+
+GO if:
+
+- live fetch works for at least some feeds;
+- broken feeds do not crash the app;
+- demo clustering produces multi-article clusters;
+- `/review` makes false positives easy to inspect;
+- repeated fetch and cluster commands are idempotent.
+
+NO-GO or redesign if:
+
+- repeated fetch creates duplicates;
+- repeated clustering creates duplicate links;
+- fuzzy matching creates many false positives;
+- source failures are not visible to the user.

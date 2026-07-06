@@ -109,7 +109,9 @@ def seed(session: Session) -> None:
             session.flush()
         for title, url, category, language in item["feeds"]:
             exists = session.scalar(
-                select(FeedSubscription).where(FeedSubscription.feed_url == url)
+                select(FeedSubscription).where(
+                    FeedSubscription.feed_url == url
+                )
             )
             if exists is None:
                 session.add(
