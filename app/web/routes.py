@@ -1,4 +1,6 @@
+import logging
 from typing import Annotated
+from urllib.parse import parse_qs
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
@@ -17,11 +19,13 @@ from app.db.models import (
     StoryCluster,
 )
 from app.db.session import get_session
+from app.services.cluster_service import cluster_articles
 from app.services.rss_fetcher import fetch_enabled_feeds, test_feed_by_id
 
 router = APIRouter()
 SessionDep = Annotated[Session, Depends(get_session)]
 templates = Jinja2Templates(directory="app/web/templates")
+logger = logging.getLogger(__name__)
 
 
 def redirect(path: str, message: str) -> RedirectResponse:
@@ -78,16 +82,42 @@ def dashboard(
     latest_run = session.scalar(
         select(FetchRun).order_by(FetchRun.started_at.desc())
     )
-    enabled = session.scalar(
-        select(func.count(FeedSubscription.id)).where(
-            FeedSubscription.is_enabled.is_(True)
+    enabled = (
+        session.scalar(
+            select(func.count(FeedSubscription.id)).where(
+                FeedSubscription.is_enabled.is_(True)
+            )
         )
-    ) or 0
-    disabled = session.scalar(
-        select(func.count(FeedSubscription.id)).where(
-            FeedSubscription.is_enabled.is_(False)
+        or 0
+    )
+    disabled = (
+        session.scalar(
+            select(func.count(FeedSubscription.id)).where(
+                FeedSubscription.is_enabled.is_(False)
+            )
         )
-    ) or 0
+        or 0
+    )
+    multi_source_clusters = (
+        session.scalar(
+            select(func.count()).select_from(
+                select(ClusterArticle.cluster_id)
+                .join(Article, Article.id == ClusterArticle.article_id)
+                .group_by(ClusterArticle.cluster_id)
+                .having(func.count(distinct(Article.source_id)) > 1)
+                .subquery()
+            )
+        )
+        or 0
+    )
+    needs_url = (
+        session.scalar(
+            select(func.count(FeedSubscription.id)).where(
+                FeedSubscription.feed_url.is_(None)
+            )
+        )
+        or 0
+    )
     return templates.TemplateResponse(
         request,
         "dashboard.html",
@@ -104,67 +134,150 @@ def dashboard(
             "latest_run": latest_run,
             "enabled_feeds": enabled,
             "disabled_feeds": disabled,
+            "needs_url_feeds": needs_url,
+            "multi_source_clusters": multi_source_clusters,
             "successful_feeds": session.scalar(
                 select(func.count(FeedSubscription.id)).where(
                     FeedSubscription.last_fetch_status == "success"
                 )
-            ) or 0,
+            )
+            or 0,
             "failed_feeds": session.scalar(
                 select(func.count(FeedSubscription.id)).where(
                     FeedSubscription.last_fetch_status == "failed"
                 )
-            ) or 0,
+            )
+            or 0,
             "never_feeds": session.scalar(
                 select(func.count(FeedSubscription.id)).where(
                     FeedSubscription.last_fetch_status == "never"
                 )
-            ) or 0,
+            )
+            or 0,
         },
     )
 
 
 @router.get("/sources")
-def sources(request: Request, session: SessionDep, message: str | None = None):
-    feeds = session.scalars(
-        select(FeedSubscription)
-        .options(joinedload(FeedSubscription.source))
-        .order_by(FeedSubscription.title)
-    ).all()
+def sources(
+    request: Request,
+    session: SessionDep,
+    message: str | None = None,
+    enabled: str | None = None,
+    needs_url: bool = False,
+    language: str | None = None,
+    country: str | None = None,
+    category: str | None = None,
+    outlet_type: str | None = None,
+    reliability_score: int | None = None,
+    bias_profile: str | None = None,
+    last_fetch_status: str | None = None,
+):
+    stmt = select(FeedSubscription).options(
+        joinedload(FeedSubscription.source)
+    )
+    if enabled == "true":
+        stmt = stmt.where(FeedSubscription.is_enabled.is_(True))
+    if enabled == "false":
+        stmt = stmt.where(FeedSubscription.is_enabled.is_(False))
+    if needs_url:
+        stmt = stmt.where(FeedSubscription.feed_url.is_(None))
+    if language:
+        stmt = stmt.where(FeedSubscription.language == language)
+    if country:
+        stmt = stmt.join(FeedSubscription.source).where(
+            NewsSource.country == country
+        )
+    if category:
+        stmt = stmt.where(FeedSubscription.category == category)
+    if outlet_type:
+        stmt = stmt.join(FeedSubscription.source).where(
+            NewsSource.outlet_type == outlet_type
+        )
+    if reliability_score:
+        stmt = stmt.join(FeedSubscription.source).where(
+            NewsSource.editorial_reliability_score == reliability_score
+        )
+    if bias_profile:
+        stmt = stmt.join(FeedSubscription.source).where(
+            NewsSource.bias_profile == bias_profile
+        )
+    if last_fetch_status:
+        stmt = stmt.where(
+            FeedSubscription.last_fetch_status == last_fetch_status
+        )
+    feeds = (
+        session.scalars(stmt.order_by(FeedSubscription.title)).unique().all()
+    )
     return templates.TemplateResponse(
-        request, "sources.html", {"feeds": feeds, "message": message}
+        request,
+        "sources.html",
+        {
+            "feeds": feeds,
+            "message": message,
+            "filters": dict(request.query_params),
+        },
     )
 
 
 @router.post("/sources/{feed_id}/enable")
 def enable_source(feed_id: int, session: SessionDep):
-    feed = session.get(FeedSubscription, feed_id)
-    if feed is None:
-        raise HTTPException(status_code=404, detail="Feed not found")
-    feed.is_enabled = True
-    session.commit()
-    return redirect("/sources", "Feed enabled")
+    try:
+        feed = session.get(FeedSubscription, feed_id)
+        if feed is None:
+            raise HTTPException(status_code=404, detail="Feed not found")
+        if not feed.feed_url:
+            return redirect("/sources", "Feed needs URL verification")
+        feed.is_enabled = True
+        session.commit()
+        return redirect("/sources", "Feed enabled")
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("Enable feed failed")
+        return redirect("/sources", "Enable feed failed")
 
 
 @router.post("/sources/{feed_id}/disable")
 def disable_source(feed_id: int, session: SessionDep):
-    feed = session.get(FeedSubscription, feed_id)
-    if feed is None:
-        raise HTTPException(status_code=404, detail="Feed not found")
-    feed.is_enabled = False
-    session.commit()
-    return redirect("/sources", "Feed disabled")
+    try:
+        feed = session.get(FeedSubscription, feed_id)
+        if feed is None:
+            raise HTTPException(status_code=404, detail="Feed not found")
+        feed.is_enabled = False
+        session.commit()
+        return redirect("/sources", "Feed disabled")
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("Disable feed failed")
+        return redirect("/sources", "Disable feed failed")
 
 
 @router.post("/sources/{feed_id}/test")
 def test_source(feed_id: int, session: SessionDep):
-    result = test_feed_by_id(session, feed_id)
-    return redirect("/sources", f"Test finished: {result.status}")
+    try:
+        result = test_feed_by_id(session, feed_id)
+        return redirect("/sources", f"Test finished: {result.status}")
+    except Exception:
+        logger.exception("Test feed failed")
+        return redirect("/sources", "Test feed failed")
 
 
 @router.post("/fetch/run")
 def fetch_run(session: SessionDep):
-    run = fetch_enabled_feeds(session, mode="manual")
-    return redirect("/sources", f"Fetch run #{run.id}: {run.status}")
+    try:
+        run = fetch_enabled_feeds(session, mode="manual")
+        if run.total_new_articles:
+            cluster_articles(session)
+            run.total_clusters_after = (
+                session.scalar(select(func.count(StoryCluster.id))) or 0
+            )
+            session.commit()
+        return RedirectResponse(f"/fetch-runs/{run.id}", status_code=303)
+    except Exception:
+        logger.exception("Fetch run failed")
+        return redirect("/fetch-runs", "Fetch run failed")
 
 
 @router.get("/feed")
@@ -257,7 +370,11 @@ def settings(
     request: Request, session: SessionDep, message: str | None = None
 ):
     setting = session.get(AppSetting, "fetch_interval_minutes")
-    value = int(setting.value) if setting else 0
+    if setting is None:
+        setting = AppSetting(key="fetch_interval_minutes", value="0")
+        session.add(setting)
+        session.commit()
+    value = int(setting.value)
     return templates.TemplateResponse(
         request,
         "settings.html",
@@ -271,10 +388,17 @@ def settings(
 
 @router.post("/settings")
 async def save_settings(request: Request, session: SessionDep):
-    form = await request.form()
-    fetch_interval_minutes = int(form.get("fetch_interval_minutes", ""))
+    try:
+        body = (await request.body()).decode()
+        form = parse_qs(body)
+        fetch_interval_minutes = int(
+            form.get("fetch_interval_minutes", [""])[0]
+        )
+    except Exception:
+        logger.exception("Settings form parsing failed")
+        return redirect("/settings", "Invalid interval")
     if fetch_interval_minutes not in ALLOWED_INTERVALS:
-        raise HTTPException(status_code=400, detail="Invalid interval")
+        return redirect("/settings", "Invalid interval")
     setting = session.get(AppSetting, "fetch_interval_minutes")
     if setting is None:
         setting = AppSetting(
@@ -283,7 +407,11 @@ async def save_settings(request: Request, session: SessionDep):
         session.add(setting)
     else:
         setting.value = str(fetch_interval_minutes)
-    session.commit()
+    try:
+        session.commit()
+    except Exception:
+        logger.exception("Settings save failed")
+        return redirect("/settings", "Settings save failed")
     return redirect("/settings", "Settings saved")
 
 

@@ -355,3 +355,94 @@ Manual UI check:
 - Open `/fetch-runs`.
 - Open `/feed` and try language/source/category filters.
 - Open `/review`.
+## Source catalog
+
+The POC includes a structured English/French source-candidate catalog for
+manual RSS source management. It covers public broadcasters, newspapers,
+newswires, magazines, digital-native outlets, specialist publications, and
+licensed/API-oriented candidates such as Reuters and AP. Candidate feeds are
+not auto-enabled: operators should review `/sources`, filter by language,
+country, category, URL status, outlet type, bias profile, and reliability
+score, then enable only feeds they want to fetch.
+
+Candidates without a confident official RSS URL are stored with an empty feed
+URL and shown as "needs URL verification". They remain disabled and are skipped
+by fetch runs until a verified URL is configured.
+
+## Source metadata
+
+Source-level metadata includes display name, primary/available languages,
+country, region, homepage URL, outlet type, ownership type, paywall level,
+default priority, tags, bias profile, rating confidence, rating notes, and an
+editorial reliability heuristic. Feed-level metadata includes feed title, feed
+URL, language, category, tags, official-URL status, URL confidence,
+enabled-by-default, and notes.
+
+The app stores RSS-provided article metadata only: titles, summaries,
+canonical URLs, timestamps, and raw feed-entry payloads. Full article scraping
+is intentionally not implemented.
+
+## Editorial reliability heuristic
+
+The `editorial_reliability_score` is an editorial reliability heuristic, not a
+guarantee of truth and not an objective rating. The current rule of thumb is:
+
+- `5`: major newswire, public broadcaster, or newspaper with strong editorial
+  standards, corrections policy, broad original reporting, and low
+  sensationalism.
+- `4`: established major outlet with strong reporting but clearer editorial
+  line, partial paywall, or more analysis/opinion mix.
+- `3`: mainstream outlet with significant political/editorial framing,
+  cable-news style, tabloid style, or click-driven tendencies, but still usable
+  with caution.
+- `2`: highly partisan, activist, sensationalist, or unreliable for a factual
+  baseline.
+- `1`: do not use by default; propaganda, conspiracy, or consistently
+  unreliable.
+
+Catalog scores are placeholders for POC triage. Verify ratings and source
+policies before production use.
+
+## Why VPN is not modeled
+
+The application does not model VPN/no-VPN behavior. Source accessibility can
+vary by user network, geography, rate limits, DNS, publisher policy, or
+commercial access. Instead of guessing the cause, the POC tracks latest
+per-feed probe/fetch status, HTTP status, parsed-entry counts, timestamps, and
+error text.
+
+## Fetch run workflow
+
+Use `/sources` or `python -m app.cli fetch` to fetch enabled feeds. Web fetches
+create a `FetchRun`, fetch enabled feeds with non-empty URLs, run clustering
+when new articles are saved, and redirect to `/fetch-runs/{id}`. If there are
+no enabled fetchable feeds, the app still records a `FetchRun` with status
+`no_enabled_feeds` so the UI has an auditable run history.
+
+`/fetch-runs` now has an empty state and a "Run fetch now" action. Fetch-run
+detail pages summarize total feeds, successes, failures, entries, new/skipped
+articles, cluster counts, and per-feed results with failed/error rows visible.
+
+## Manual source management
+
+The `/sources` page is the main control surface for source candidates. It shows
+enabled status, source/feed names, language, country, category, tags, outlet
+type, editorial reliability heuristic, bias profile, URL status, latest fetch
+status, latest success timestamp, errors, and actions to enable, disable, test,
+or fetch enabled feeds.
+
+Commercial/licensed sources such as Reuters and AP may require separate API or
+licensing arrangements. They are included only as disabled candidates unless an
+official public feed/API is configured.
+
+## Known limitations
+
+- SQLite schema changes are handled by lightweight table creation and additive
+  column checks; Alembic migrations are intentionally not added yet.
+- There is no auth, Docker, PostgreSQL, Celery/RQ, Telegram integration, LLM
+  processing, embeddings, or full article scraping.
+- Source metadata and reliability scores are heuristic placeholders.
+- RSS availability and publisher URL formats can change, so low-confidence or
+  empty-URL candidates need manual verification.
+- Fetching depends on the operator's current network and publisher access
+  rules.

@@ -15,7 +15,12 @@ from app.db.models import (
 )
 from app.db.session import get_session
 from app.main import app
-from app.services.rss_fetcher import fetch_enabled_feeds
+from app.services.rss_fetcher import (
+    fetch_enabled_feeds,
+)
+from app.services.rss_fetcher import (
+    test_feed_by_id as run_test_feed_by_id,
+)
 from app.services.seed_sources import seed_all_candidates
 
 
@@ -173,6 +178,95 @@ def test_dashboard_sources_and_fetch_runs_routes_return_200():
         assert client.get("/").status_code == 200
         assert client.get("/sources").status_code == 200
         assert client.get("/fetch-runs").status_code == 200
+    finally:
+        app.dependency_overrides.clear()
+        session.close()
+
+
+def test_settings_routes_valid_and_invalid_posts():
+    session = session_factory()
+
+    def override_session():
+        yield session
+
+    app.dependency_overrides[get_session] = override_session
+    try:
+        client = TestClient(app)
+        assert client.get("/settings").status_code == 200
+        response = client.post(
+            "/settings", data={"fetch_interval_minutes": "180"}
+        )
+        assert response.status_code == 200
+        stored = session.get(AppSetting, "fetch_interval_minutes")
+        assert stored.value == "180"
+        response = client.post(
+            "/settings", data={"fetch_interval_minutes": "17"}
+        )
+        assert response.status_code == 200
+        assert session.get(AppSetting, "fetch_interval_minutes").value == "180"
+    finally:
+        app.dependency_overrides.clear()
+        session.close()
+
+
+def test_fetch_run_routes_empty_and_no_enabled_feeds():
+    session = session_factory()
+    add_feed(session, enabled=False)
+
+    def override_session():
+        yield session
+
+    app.dependency_overrides[get_session] = override_session
+    try:
+        client = TestClient(app)
+        response = client.get("/fetch-runs")
+        assert response.status_code == 200
+        assert "No fetch runs yet" in response.text
+        response = client.post("/fetch/run", follow_redirects=False)
+        assert response.status_code == 303
+        run = session.scalar(select(FetchRun))
+        assert run.status == "no_enabled_feeds"
+        assert client.get("/fetch-runs").status_code == 200
+        assert client.get(f"/fetch-runs/{run.id}").status_code == 200
+    finally:
+        app.dependency_overrides.clear()
+        session.close()
+
+
+def test_source_catalog_metadata_and_empty_url_workflow():
+    session = session_factory()
+    seed_all_candidates(session)
+    feeds = session.scalars(select(FeedSubscription)).all()
+    assert len(feeds) >= 80
+    empty_url_feeds = [feed for feed in feeds if not feed.feed_url]
+    assert empty_url_feeds
+    assert all(not feed.is_enabled for feed in empty_url_feeds)
+    source = session.scalar(select(NewsSource))
+    assert source.outlet_type
+    assert source.editorial_reliability_score
+    result = run_test_feed_by_id(session, empty_url_feeds[0].id)
+    assert result.status == "failed"
+    assert "needs URL verification" in result.error
+
+
+def test_sources_filters_return_200():
+    session = session_factory()
+    seed_all_candidates(session)
+
+    def override_session():
+        yield session
+
+    app.dependency_overrides[get_session] = override_session
+    try:
+        client = TestClient(app)
+        paths = [
+            "/sources?language=en",
+            "/sources?language=fr",
+            "/sources?reliability_score=5",
+            "/sources?needs_url=true",
+        ]
+        for path in paths:
+            assert client.get(path).status_code == 200
     finally:
         app.dependency_overrides.clear()
         session.close()
