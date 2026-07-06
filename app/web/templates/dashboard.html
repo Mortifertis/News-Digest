@@ -4,5 +4,7 @@
 <div class="card"><span>Feeds</span><strong>{{ total_feeds }}</strong></div>
 <div class="card"><span>Articles</span><strong>{{ total_articles }}</strong></div>
 <div class="card"><span>Clusters</span><strong>{{ total_clusters }}</strong></div>
-</div><p class="muted">Latest fetch: {{ latest_fetch_time or "never" }}</p>
+</div>
+<section class="card"><h2>Latest fetch run</h2>{% if latest_run %}<p><a href="/fetch-runs/{{ latest_run.id }}">#{{ latest_run.id }}</a> {{ latest_run.status }}</p><p>Started: {{ latest_run.started_at }} · Finished: {{ latest_run.finished_at }}</p><p>Feeds: {{ latest_run.total_feeds }} · Success: {{ latest_run.successful_feeds }} · Failed: {{ latest_run.failed_feeds }}</p><p>New: {{ latest_run.total_new_articles }} · Skipped: {{ latest_run.total_skipped_articles }} · Clusters: {{ latest_run.total_clusters_before }} → {{ latest_run.total_clusters_after }}</p>{% else %}<p>Never fetched.</p>{% endif %}</section>
+<section class="card"><h2>Source health</h2><p>Enabled: {{ enabled_feeds }} · Disabled: {{ disabled_feeds }}</p><p>Last success: {{ successful_feeds }} · Last failed: {{ failed_feeds }} · Never: {{ never_feeds }}</p></section>
 {% endblock %}

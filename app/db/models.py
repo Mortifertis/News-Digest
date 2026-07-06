@@ -5,6 +5,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Integer,
     String,
     Text,
     UniqueConstraint,
@@ -51,9 +52,15 @@ class FeedSubscription(Base):
     last_fetched_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True)
     )
+    last_successful_fetch_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
 
     source: Mapped[NewsSource] = relationship(back_populates="feeds")
     articles: Mapped[list["Article"]] = relationship(back_populates="feed")
+    fetch_results: Mapped[list["FeedFetchResult"]] = relationship(
+        back_populates="feed"
+    )
 
 
 class Article(Base):
@@ -115,3 +122,60 @@ class ClusterArticle(Base):
 
     cluster: Mapped[StoryCluster] = relationship(back_populates="articles")
     article: Mapped[Article] = relationship()
+
+
+class FetchRun(Base):
+    __tablename__ = "fetch_runs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
+    mode: Mapped[str] = mapped_column(String(20))
+    status: Mapped[str] = mapped_column(String(30), default="failed")
+    total_feeds: Mapped[int] = mapped_column(default=0)
+    successful_feeds: Mapped[int] = mapped_column(default=0)
+    failed_feeds: Mapped[int] = mapped_column(default=0)
+    total_entries: Mapped[int] = mapped_column(default=0)
+    total_new_articles: Mapped[int] = mapped_column(default=0)
+    total_skipped_articles: Mapped[int] = mapped_column(default=0)
+    total_clusters_before: Mapped[int] = mapped_column(default=0)
+    total_clusters_after: Mapped[int] = mapped_column(default=0)
+    error_summary: Mapped[str | None] = mapped_column(Text)
+
+    feed_results: Mapped[list["FeedFetchResult"]] = relationship(
+        back_populates="fetch_run", cascade="all, delete-orphan"
+    )
+
+
+class FeedFetchResult(Base):
+    __tablename__ = "feed_fetch_results"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    fetch_run_id: Mapped[int] = mapped_column(ForeignKey("fetch_runs.id"))
+    feed_id: Mapped[int] = mapped_column(ForeignKey("feed_subscriptions.id"))
+    source_name: Mapped[str] = mapped_column(String(120))
+    feed_title: Mapped[str] = mapped_column(String(160))
+    feed_url: Mapped[str] = mapped_column(String(500))
+    language: Mapped[str] = mapped_column(String(12))
+    status: Mapped[str] = mapped_column(String(20))
+    http_status: Mapped[int | None] = mapped_column(Integer)
+    entries_count: Mapped[int] = mapped_column(default=0)
+    new_articles_count: Mapped[int] = mapped_column(default=0)
+    skipped_articles_count: Mapped[int] = mapped_column(default=0)
+    elapsed_ms: Mapped[int] = mapped_column(default=0)
+    error: Mapped[str | None] = mapped_column(Text)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+    fetch_run: Mapped[FetchRun] = relationship(back_populates="feed_results")
+    feed: Mapped[FeedSubscription] = relationship(
+        back_populates="fetch_results"
+    )
+
+
+class AppSetting(Base):
+    __tablename__ = "app_settings"
+
+    key: Mapped[str] = mapped_column(String(80), primary_key=True)
+    value: Mapped[str] = mapped_column(String(200))

@@ -10,6 +10,8 @@ FEED_STATUS_COLUMNS = {
     "last_entries_count": "INTEGER DEFAULT 0 NOT NULL",
     "last_new_articles_count": "INTEGER DEFAULT 0 NOT NULL",
     "last_skipped_articles_count": "INTEGER DEFAULT 0 NOT NULL",
+    "last_fetched_at": "DATETIME",
+    "last_successful_fetch_at": "DATETIME",
 }
 
 

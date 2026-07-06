@@ -15,7 +15,7 @@ class Settings:
         "DATABASE_URL", "sqlite:///./morti_news_digest.db"
     )
     fuzzy_duplicate_threshold: int = int(
-        os.getenv("FUZZY_DUPLICATE_THRESHOLD", "72")
+        os.getenv("FUZZY_DUPLICATE_THRESHOLD", "66")
     )
     fuzzy_lookback_hours: int = int(os.getenv("FUZZY_LOOKBACK_HOURS", "72"))
 

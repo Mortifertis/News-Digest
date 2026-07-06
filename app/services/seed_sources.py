@@ -89,11 +89,10 @@ SEED_DATA = [
         ],
     },
 ]
-# TODO: Add more section-specific France 24/RFI feeds after verifying stable
-# official category URLs for the desired languages and sections.
 
 
-def seed(session: Session) -> None:
+def seed(session: Session, *, default_enabled: bool = True) -> int:
+    count = 0
     for item in SEED_DATA:
         source = session.scalar(
             select(NewsSource).where(NewsSource.name == item["name"])
@@ -108,28 +107,39 @@ def seed(session: Session) -> None:
             session.add(source)
             session.flush()
         for title, url, category, language in item["feeds"]:
-            exists = session.scalar(
+            feed = session.scalar(
                 select(FeedSubscription).where(
                     FeedSubscription.feed_url == url
                 )
             )
-            if exists is None:
-                session.add(
-                    FeedSubscription(
-                        source_id=source.id,
-                        title=title,
-                        feed_url=url,
-                        category=category,
-                        language=language,
-                    )
+            if feed is None:
+                feed = FeedSubscription(
+                    source_id=source.id,
+                    title=title,
+                    feed_url=url,
+                    category=category,
+                    language=language,
+                    is_enabled=default_enabled,
                 )
+                session.add(feed)
+                count += 1
+            else:
+                feed.source_id = source.id
+                feed.title = title
+                feed.category = category
+                feed.language = language
     session.commit()
+    return count
+
+
+def seed_all_candidates(session: Session) -> int:
+    return seed(session, default_enabled=False)
 
 
 def main() -> None:
     with SessionLocal() as session:
-        seed(session)
-    print("Seeded initial RSS sources and feed subscriptions.")
+        count = seed(session)
+    print(f"Seeded initial RSS sources and feed subscriptions ({count} new).")
 
 
 if __name__ == "__main__":

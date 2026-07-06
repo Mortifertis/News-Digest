@@ -238,3 +238,120 @@ NO-GO or redesign if:
 - repeated clustering creates duplicate links;
 - fuzzy matching creates many false positives;
 - source failures are not visible to the user.
+## Source management and fetch workflow
+
+This POC now supports two source-management workflows on top of FastAPI and
+SQLite only.
+
+### Workflow A: manual source management
+
+1. Seed every registry candidate without probing the network:
+
+   ```bash
+   python -m app.cli seed-all-candidates
+   ```
+
+2. Open `/sources` and enable or disable feeds manually. The page shows each
+   feed's enabled state, metadata, latest fetch status, HTTP status, parsed
+   entries, new/skipped article counts, last error, last fetch time, and last
+   successful fetch time.
+
+3. Use the per-feed **Test feed now** button to test a source immediately.
+   A failed test does not disable the feed automatically because network
+   failures can be temporary.
+
+4. Use **Fetch enabled feeds now** on `/sources`, or run:
+
+   ```bash
+   python -m app.cli fetch
+   ```
+
+### Workflow B: automatic local probing
+
+The existing accessible-source workflow remains available:
+
+```bash
+python -m app.cli seed-accessible-sources
+```
+
+This workflow is intended for local probing and can enable feeds that are
+currently reachable from the machine running the POC.
+
+### CLI commands
+
+```bash
+python -m app.cli seed-all-candidates
+python -m app.cli seed-accessible-sources
+python -m app.cli enable-feed "BBC World News"
+python -m app.cli disable-feed "BBC World News"
+python -m app.cli test-feed "BBC World News"
+python -m app.cli fetch
+python -m app.cli set-fetch-interval 180
+python -m app.cli scheduler
+```
+
+Fetch output is summarized at the end. Example:
+
+```text
+Fetch run #15 finished: partial
+Enabled feeds: 18
+Successful: 7
+Failed: 11
+New articles: 143
+Skipped existing: 62
+Total entries parsed: 205
+
+Failed feeds:
+- BBC World: SSL handshake timed out
+- Le Monde International: connection reset
+```
+
+### New routes
+
+- `/sources` — source/feed management and fetch actions.
+- `POST /sources/{feed_id}/enable` — enable a feed.
+- `POST /sources/{feed_id}/disable` — disable a feed.
+- `POST /sources/{feed_id}/test` — test one feed now.
+- `POST /fetch/run` — fetch all enabled feeds now.
+- `/fetch-runs` — recent fetch run history.
+- `/fetch-runs/{id}` — fetch run details and per-feed results.
+- `/settings` — configure the POC scheduler interval.
+
+### Scheduler interval
+
+Allowed `fetch_interval_minutes` values are:
+
+- `0` — manual only
+- `60` — every hour
+- `180` — every 3 hours
+- `360` — every 6 hours
+- `720` — every 12 hours
+- `1440` — every 24 hours
+
+The scheduler is intentionally simple for the POC. It reads the setting, runs
+fetch and clustering in a loop, prints summaries, sleeps for the configured
+interval, and exits cleanly on `Ctrl+C`.
+
+### Validation commands
+
+```bash
+python -m pytest -q
+python -m ruff check .
+python -m app.cli seed-all-candidates
+python -m app.cli set-fetch-interval 180
+python -m app.cli fetch
+python -m app.cli cluster
+python -m app.cli stats
+uvicorn app.main:app --reload
+```
+
+Manual UI check:
+
+- Open `/sources`.
+- Enable a few feeds.
+- Test feeds.
+- Run **Fetch enabled feeds now**.
+- Open the dashboard.
+- Open `/fetch-runs`.
+- Open `/feed` and try language/source/category filters.
+- Open `/review`.
