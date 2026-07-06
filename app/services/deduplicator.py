@@ -35,39 +35,62 @@ def find_exact_cluster(
     )
 
 
+def _candidate_clusters(
+    session: Session, article: Article, since: datetime
+) -> list[StoryCluster]:
+    return list(
+        session.scalars(
+            select(StoryCluster)
+            .join(ClusterArticle)
+            .join(Article, Article.id == ClusterArticle.article_id)
+            .where(Article.id != article.id)
+            .where(Article.language == article.language)
+            .where(Article.created_at >= since)
+            .order_by(StoryCluster.id)
+            .distinct()
+        )
+    )
+
+
+def _cluster_articles(
+    session: Session, cluster: StoryCluster, article: Article, since: datetime
+) -> list[Article]:
+    return list(
+        session.scalars(
+            select(Article)
+            .join(ClusterArticle, ClusterArticle.article_id == Article.id)
+            .where(ClusterArticle.cluster_id == cluster.id)
+            .where(Article.id != article.id)
+            .where(Article.language == article.language)
+            .where(Article.created_at >= since)
+            .order_by(Article.id)
+        )
+    )
+
+
 def find_fuzzy_cluster(
     session: Session, article: Article
 ) -> tuple[StoryCluster, float] | None:
     settings = get_settings()
     since = datetime.now(UTC) - timedelta(hours=settings.fuzzy_lookback_hours)
-    candidates = session.scalars(
-        select(Article)
-        .join(ClusterArticle, ClusterArticle.article_id == Article.id)
-        .where(Article.id != article.id)
-        .where(Article.language == article.language)
-        .where(Article.created_at >= since)
-    ).all()
-    best_article = None
+    best_cluster = None
     best_score = 0.0
-    for candidate in candidates:
-        score = float(
-            fuzz.token_set_ratio(
-                article_text(article), article_text(candidate)
+    new_text = article_text(article)
+
+    for cluster in _candidate_clusters(session, article, since):
+        cluster_best_score = 0.0
+        for candidate in _cluster_articles(session, cluster, article, since):
+            score = float(
+                fuzz.token_set_ratio(new_text, article_text(candidate))
             )
-        )
-        if score > best_score:
-            best_article = candidate
-            best_score = score
-    if best_article is None or best_score < settings.fuzzy_duplicate_threshold:
+            cluster_best_score = max(cluster_best_score, score)
+        if cluster_best_score > best_score:
+            best_cluster = cluster
+            best_score = cluster_best_score
+
+    if best_cluster is None or best_score < settings.fuzzy_duplicate_threshold:
         return None
-    cluster = session.scalar(
-        select(StoryCluster)
-        .join(ClusterArticle)
-        .where(ClusterArticle.article_id == best_article.id)
-    )
-    if cluster is None:
-        return None
-    return cluster, best_score
+    return best_cluster, best_score
 
 
 def match_type_for_exact(session: Session, article: Article) -> str:

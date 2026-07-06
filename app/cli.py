@@ -1,8 +1,14 @@
 import argparse
+import json
+from itertools import combinations
+from pathlib import Path
+
+from rapidfuzz import fuzz
 
 from app.db.session import SessionLocal
 from app.services.cluster_service import cluster_articles
 from app.services.demo_loader import load_demo_articles, reset_article_data
+from app.services.normalizer import normalize_article_fields
 from app.services.rss_fetcher import FeedFetchResult, fetch_enabled_feeds
 from app.services.stats_service import collect_stats
 
@@ -73,6 +79,30 @@ def run_stats() -> None:
         print_stats(collect_stats(session))
 
 
+def run_demo_scores() -> None:
+    fixture_path = Path("fixtures/demo_articles.json")
+    articles = json.loads(fixture_path.read_text())
+    by_language: dict[str, list[tuple[str, str]]] = {}
+    for item in articles:
+        fields = normalize_article_fields(
+            item["title"], item["summary"], item["url"]
+        )
+        text = (
+            f"{fields['normalized_title']} {fields['normalized_summary']}"
+        ).strip()
+        by_language.setdefault(item["language"], []).append(
+            (item["external_id"], text)
+        )
+
+    for language, language_articles in sorted(by_language.items()):
+        print(f"Language: {language}")
+        for left, right in combinations(language_articles, 2):
+            left_id, left_text = left
+            right_id, right_text = right
+            score = fuzz.token_set_ratio(left_text, right_text)
+            print(f"  {left_id} <> {right_id}: {score:.1f}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="morti-news-digest")
     parser.add_argument(
@@ -84,6 +114,7 @@ def main() -> None:
             "reset-data",
             "refetch",
             "load-demo",
+            "demo-scores",
         ),
     )
     parser.add_argument(
@@ -114,6 +145,8 @@ def main() -> None:
             count = load_demo_articles(session, reset=not args.no_reset)
         print(f"Loaded {count} demo articles.")
         run_stats()
+    elif args.command == "demo-scores":
+        run_demo_scores()
 
 
 if __name__ == "__main__":

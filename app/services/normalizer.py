@@ -58,7 +58,7 @@ def normalize_article_fields(
     normalized_summary = normalize_text(summary, html=True)
     return {
         "title": (title or "").strip(),
-        "summary": strip_html(summary).strip(),
+        "summary": _SPACE_RE.sub(" ", strip_html(summary)).strip(),
         "canonical_url": normalize_url(url),
         "normalized_title": normalized_title,
         "normalized_summary": normalized_summary,
