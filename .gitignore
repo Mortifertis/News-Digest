@@ -216,3 +216,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Morti News Digest local files
+.env
+morti_news_digest.db

@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block content %}
+<h1>Morti News Digest</h1><div class="grid">
+<div class="card"><span>Sources</span><strong>{{ total_sources }}</strong></div>
+<div class="card"><span>Feeds</span><strong>{{ total_feeds }}</strong></div>
+<div class="card"><span>Articles</span><strong>{{ total_articles }}</strong></div>
+<div class="card"><span>Clusters</span><strong>{{ total_clusters }}</strong></div>
+</div><p class="muted">Latest fetch: {{ latest_fetch_time or "never" }}</p>
+{% endblock %}
