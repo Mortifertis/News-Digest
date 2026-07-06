@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from time import perf_counter
 
 import feedparser
@@ -13,6 +13,8 @@ from app.db.models import FeedSubscription, NewsSource
 CONNECT_TIMEOUT = 10.0
 READ_TIMEOUT = 20.0
 TOTAL_TIMEOUT = 30.0
+NEEDS_VERIFICATION = "Needs verification"
+FIND_RSS = "Find official RSS URL"
 
 
 @dataclass(frozen=True)
@@ -22,11 +24,27 @@ class SourceCandidate:
     country: str
     homepage_url: str
     feed_title: str
-    feed_url: str
+    feed_url: str | None
     category: str
-    priority: int
-    notes: str
+    priority: int = 1
+    notes: str = NEEDS_VERIFICATION
     enabled_by_default: bool = False
+    display_name: str | None = None
+    language_primary: str | None = None
+    languages_available: list[str] = field(default_factory=list)
+    region: str = ""
+    outlet_type: str = "digital_native"
+    ownership_type: str = "unknown"
+    paywall_level: str = "unknown"
+    editorial_reliability_score: int = 3
+    bias_profile: str = "unknown"
+    rating_confidence: str = "low"
+    rating_notes: str = "Heuristic placeholder; verify before production use."
+    default_priority: int = 3
+    tags: list[str] = field(default_factory=list)
+    feed_tags: list[str] = field(default_factory=list)
+    is_official_url: str = "unknown"
+    url_confidence: str = "low"
 
 
 @dataclass
@@ -43,212 +61,594 @@ class ProbeResult:
         return self.status == "success"
 
 
-CANDIDATES = [
-    SourceCandidate(
-        "The Guardian",
-        "en",
-        "United Kingdom",
-        "https://www.theguardian.com/international",
-        "The Guardian World",
-        "https://www.theguardian.com/world/rss",
-        "world",
-        10,
-        "Worked earlier; reverify locally before enabling.",
-    ),
-    SourceCandidate(
-        "The Guardian",
-        "en",
-        "United Kingdom",
-        "https://www.theguardian.com/international",
-        "The Guardian Technology",
-        "https://www.theguardian.com/technology/rss",
-        "technology",
-        20,
-        "Worked earlier; reverify locally before enabling.",
-    ),
-    SourceCandidate(
-        "France 24",
-        "en",
-        "France",
-        "https://www.france24.com/en/",
-        "France 24 English",
-        "https://www.france24.com/en/rss",
-        "world",
-        30,
-        "Known working candidate; still probed before enabling.",
-    ),
-    SourceCandidate(
-        "Euronews",
-        "en",
-        "France",
-        "https://www.euronews.com/",
-        "Euronews English World News",
-        "https://www.euronews.com/rss?format=mrss&level=theme&name=news",
-        "world",
-        40,
-        "Official Euronews MRSS widget URL; needs local verification.",
-    ),
-    SourceCandidate(
-        "Euronews",
-        "en",
-        "France",
-        "https://www.euronews.com/next",
-        "Euronews English Next",
-        "https://www.euronews.com/rss?format=mrss&level=vertical&name=next",
-        "technology",
-        50,
-        "Official Euronews MRSS widget URL; needs local verification.",
-    ),
-    SourceCandidate(
-        "The Christian Science Monitor",
-        "en",
-        "United States",
-        "https://www.csmonitor.com/World",
-        "Christian Science Monitor World",
-        "https://www.csmonitor.com/rss/world",
-        "world",
-        60,
-        "Official RSS page exists; URL needs local verification.",
-    ),
-    SourceCandidate(
-        "CBC",
-        "en",
-        "Canada",
-        "https://www.cbc.ca/news",
-        "CBC Top Stories",
-        "https://www.cbc.ca/webfeed/rss/rss-topstories",
-        "top",
-        70,
-        "Official CBC webfeed; needs local verification.",
-    ),
-    SourceCandidate(
-        "CBC",
-        "en",
-        "Canada",
-        "https://www.cbc.ca/news/world",
-        "CBC World",
-        "https://www.cbc.ca/webfeed/rss/rss-world",
-        "world",
-        80,
-        "Official CBC webfeed; needs local verification.",
-    ),
-    SourceCandidate(
-        "CBC",
-        "en",
-        "Canada",
-        "https://www.cbc.ca/news/canada",
-        "CBC Canada",
-        "https://www.cbc.ca/webfeed/rss/rss-canada",
-        "canada",
-        90,
-        "Official CBC webfeed; needs local verification.",
-    ),
-    SourceCandidate(
-        "NPR",
-        "en",
-        "United States",
-        "https://www.npr.org/sections/world/",
-        "NPR World",
-        "https://feeds.npr.org/1004/rss.xml",
-        "world",
-        100,
-        "Optional candidate using public NPR feed; needs verification.",
-    ),
-    SourceCandidate(
-        "Al Jazeera English",
-        "en",
-        "Qatar",
-        "https://www.aljazeera.com/",
-        "Al Jazeera English",
-        "https://www.aljazeera.com/xml/rss/all.xml",
-        "world",
-        110,
-        "Optional official-looking feed; needs local verification.",
-    ),
-    SourceCandidate(
-        "France 24",
-        "fr",
-        "France",
-        "https://www.france24.com/fr/",
+def _feed(
+    title: str,
+    url: str | None,
+    category: str,
+    tags: list[str],
+    *,
+    official: str = "true",
+    confidence: str = "high",
+    notes: str = NEEDS_VERIFICATION,
+) -> dict:
+    if not url:
+        official = "unknown"
+        confidence = "low"
+        notes = FIND_RSS
+    return {
+        "feed_title": title,
+        "feed_url": url,
+        "category": category,
+        "feed_tags": tags,
+        "is_official_url": official,
+        "url_confidence": confidence,
+        "notes": notes,
+    }
+
+
+def _source(
+    name: str,
+    lang: str,
+    country: str,
+    region: str,
+    home: str,
+    outlet_type: str,
+    reliability: int,
+    bias: str,
+    feeds: list[dict],
+    *,
+    ownership: str = "private",
+    paywall: str = "partial",
+    confidence: str = "medium",
+    tags: list[str] | None = None,
+) -> list[SourceCandidate]:
+    base_tags = tags or ["world", "politics"]
+    return [
+        SourceCandidate(
+            source_name=name,
+            language=lang,
+            country=country,
+            homepage_url=home,
+            display_name=name,
+            language_primary=lang,
+            languages_available=[lang],
+            region=region,
+            outlet_type=outlet_type,
+            ownership_type=ownership,
+            paywall_level=paywall,
+            editorial_reliability_score=reliability,
+            bias_profile=bias,
+            rating_confidence=confidence,
+            rating_notes=(
+                "Editorial reliability heuristic, not a truth guarantee. "
+                "Verify before production use."
+            ),
+            default_priority=max(1, min(5, reliability)),
+            priority=max(1, min(5, reliability)),
+            tags=base_tags,
+            enabled_by_default=False,
+            **feed,
+        )
+        for feed in feeds
+    ]
+
+
+CANDIDATES: list[SourceCandidate] = []
+
+
+def _add_catalog() -> None:
+    data = [
+        (
+            "Reuters",
+            "en",
+            "United Kingdom",
+            "Global",
+            "https://www.reuters.com/",
+            "newswire",
+            5,
+            "center",
+            [
+                _feed(
+                    "Reuters licensed/API candidate",
+                    None,
+                    "general",
+                    ["world"],
+                    notes=(
+                        "Reuters content often requires licensed access; "
+                        "use only if official public feed/API is configured."
+                    ),
+                )
+            ],
+            "private",
+            "unknown",
+        ),
+        (
+            "Associated Press",
+            "en",
+            "United States",
+            "North America",
+            "https://apnews.com/",
+            "newswire",
+            5,
+            "center",
+            [
+                _feed(
+                    "AP News licensed/API candidate",
+                    None,
+                    "general",
+                    ["world"],
+                    notes="AP content/API may require licensed access.",
+                )
+            ],
+            "nonprofit",
+            "unknown",
+        ),
+        (
+            "BBC News",
+            "en",
+            "United Kingdom",
+            "Europe",
+            "https://www.bbc.com/news",
+            "public_broadcaster",
+            5,
+            "center",
+            [
+                _feed(
+                    "BBC World",
+                    "https://feeds.bbci.co.uk/news/world/rss.xml",
+                    "world",
+                    ["world"],
+                ),
+                _feed(
+                    "BBC UK",
+                    "https://feeds.bbci.co.uk/news/uk/rss.xml",
+                    "politics",
+                    ["uk"],
+                ),
+                _feed(
+                    "BBC Technology",
+                    "https://feeds.bbci.co.uk/news/technology/rss.xml",
+                    "technology",
+                    ["technology"],
+                ),
+                _feed(
+                    "BBC Science",
+                    "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
+                    "science",
+                    ["science", "climate"],
+                ),
+                _feed(
+                    "BBC Business",
+                    "https://feeds.bbci.co.uk/news/business/rss.xml",
+                    "business",
+                    ["business"],
+                ),
+            ],
+            "public",
+            "free",
+        ),
+        (
+            "The Guardian",
+            "en",
+            "United Kingdom",
+            "Europe",
+            "https://www.theguardian.com/international",
+            "newspaper",
+            5,
+            "lean_left",
+            [
+                _feed(
+                    "The Guardian World",
+                    "https://www.theguardian.com/world/rss",
+                    "world",
+                    ["world"],
+                ),
+                _feed(
+                    "The Guardian UK",
+                    "https://www.theguardian.com/uk/rss",
+                    "politics",
+                    ["uk"],
+                ),
+                _feed(
+                    "The Guardian US",
+                    "https://www.theguardian.com/us-news/rss",
+                    "us",
+                    ["us"],
+                ),
+                _feed(
+                    "The Guardian Europe",
+                    "https://www.theguardian.com/world/europe-news/rss",
+                    "europe",
+                    ["europe"],
+                ),
+                _feed(
+                    "The Guardian Technology",
+                    "https://www.theguardian.com/technology/rss",
+                    "technology",
+                    ["technology"],
+                ),
+                _feed(
+                    "The Guardian Business",
+                    "https://www.theguardian.com/business/rss",
+                    "business",
+                    ["business"],
+                ),
+                _feed(
+                    "The Guardian Culture",
+                    "https://www.theguardian.com/culture/rss",
+                    "culture",
+                    ["culture"],
+                ),
+                _feed(
+                    "The Guardian Environment",
+                    "https://www.theguardian.com/environment/rss",
+                    "climate",
+                    ["climate"],
+                ),
+            ],
+            "private",
+            "partial",
+        ),
+        (
+            "France 24 English",
+            "en",
+            "France",
+            "Europe",
+            "https://www.france24.com/en/",
+            "public_broadcaster",
+            5,
+            "center",
+            [
+                _feed(
+                    "France 24 English",
+                    "https://www.france24.com/en/rss",
+                    "world",
+                    ["world"],
+                )
+            ],
+            "state-funded",
+            "free",
+        ),
+        (
+            "Euronews English",
+            "en",
+            "France",
+            "Europe",
+            "https://www.euronews.com/",
+            "private_broadcaster",
+            4,
+            "center",
+            [
+                _feed(
+                    "Euronews World",
+                    "https://www.euronews.com/rss?format=mrss&level=theme&name=news",
+                    "world",
+                    ["world"],
+                ),
+                _feed(
+                    "Euronews Next",
+                    "https://www.euronews.com/rss?format=mrss&level=vertical&name=next",
+                    "technology",
+                    ["technology"],
+                ),
+                _feed(
+                    "Euronews Green",
+                    "https://www.euronews.com/rss?format=mrss&level=vertical&name=green",
+                    "climate",
+                    ["climate"],
+                ),
+            ],
+            "mixed",
+            "free",
+        ),
+        (
+            "CBC News",
+            "en",
+            "Canada",
+            "North America",
+            "https://www.cbc.ca/news",
+            "public_broadcaster",
+            5,
+            "center",
+            [
+                _feed(
+                    "CBC Top Stories",
+                    "https://www.cbc.ca/webfeed/rss/rss-topstories",
+                    "general",
+                    ["canada"],
+                ),
+                _feed(
+                    "CBC World",
+                    "https://www.cbc.ca/webfeed/rss/rss-world",
+                    "world",
+                    ["world"],
+                ),
+                _feed(
+                    "CBC Canada",
+                    "https://www.cbc.ca/webfeed/rss/rss-canada",
+                    "canada",
+                    ["canada"],
+                ),
+                _feed(
+                    "CBC Politics",
+                    "https://www.cbc.ca/webfeed/rss/rss-politics",
+                    "politics",
+                    ["politics"],
+                ),
+                _feed(
+                    "CBC Business",
+                    "https://www.cbc.ca/webfeed/rss/rss-business",
+                    "business",
+                    ["business"],
+                ),
+                _feed(
+                    "CBC Technology & Science",
+                    "https://www.cbc.ca/webfeed/rss/rss-technology",
+                    "technology",
+                    ["technology", "science"],
+                ),
+            ],
+            "public",
+            "free",
+        ),
+        (
+            "NPR",
+            "en",
+            "United States",
+            "North America",
+            "https://www.npr.org/",
+            "public_broadcaster",
+            5,
+            "center",
+            [
+                _feed(
+                    "NPR News",
+                    "https://feeds.npr.org/1001/rss.xml",
+                    "general",
+                    ["us"],
+                ),
+                _feed(
+                    "NPR World",
+                    "https://feeds.npr.org/1004/rss.xml",
+                    "world",
+                    ["world"],
+                ),
+                _feed(
+                    "NPR Politics",
+                    "https://feeds.npr.org/1014/rss.xml",
+                    "politics",
+                    ["politics"],
+                ),
+                _feed(
+                    "NPR Business",
+                    "https://feeds.npr.org/1006/rss.xml",
+                    "business",
+                    ["business"],
+                ),
+                _feed(
+                    "NPR Technology",
+                    "https://feeds.npr.org/1019/rss.xml",
+                    "technology",
+                    ["technology"],
+                ),
+                _feed(
+                    "NPR Science",
+                    "https://feeds.npr.org/1007/rss.xml",
+                    "science",
+                    ["science"],
+                ),
+                _feed(
+                    "NPR Culture",
+                    "https://feeds.npr.org/1008/rss.xml",
+                    "culture",
+                    ["culture"],
+                ),
+            ],
+            "nonprofit",
+            "free",
+        ),
+        (
+            "Al Jazeera English",
+            "en",
+            "Qatar",
+            "Middle East",
+            "https://www.aljazeera.com/",
+            "private_broadcaster",
+            4,
+            "state_perspective",
+            [
+                _feed(
+                    "Al Jazeera English",
+                    "https://www.aljazeera.com/xml/rss/all.xml",
+                    "world",
+                    ["world", "middle_east"],
+                )
+            ],
+            "state-funded",
+            "free",
+        ),
+        (
+            "Deutsche Welle English",
+            "en",
+            "Germany",
+            "Europe",
+            "https://www.dw.com/en/",
+            "public_broadcaster",
+            5,
+            "center",
+            [
+                _feed(
+                    "DW English",
+                    "https://rss.dw.com/xml/rss-en-all",
+                    "world",
+                    ["world", "europe"],
+                )
+            ],
+            "state-funded",
+            "free",
+        ),
+    ]
+    english_more = [
+        "CNN",
+        "Fox News",
+        "NBC News",
+        "CBS News",
+        "ABC News",
+        "USA Today",
+        "Washington Post",
+        "New York Times",
+        "Wall Street Journal",
+        "Politico",
+        "Axios",
+        "The Hill",
+        "Financial Times",
+        "The Economist",
+        "Bloomberg",
+        "CNBC",
+        "Sky News",
+        "The Independent",
+        "The Telegraph",
+        "The Times / Sunday Times",
+        "Globe and Mail",
+        "Toronto Star",
+        "National Post",
+        "CTV News",
+        "Global News",
+        "The Conversation",
+        "Ars Technica",
+        "Wired",
+        "The Verge",
+        "TechCrunch",
+        "MIT Technology Review",
+        "Nature News",
+        "Science.org News",
+        "Scientific American",
+        "New Scientist",
+        "Space.com",
+    ]
+    french_more = [
         "France 24 Français",
-        "https://www.france24.com/fr/rss",
-        "world",
-        120,
-        "Known working candidate; still probed before enabling.",
-    ),
-    SourceCandidate(
-        "Euronews",
-        "fr",
-        "France",
-        "https://fr.euronews.com/",
-        "Euronews Français Infos",
-        "https://fr.euronews.com/rss?format=mrss&level=theme&name=news",
-        "world",
-        130,
-        "Official Euronews MRSS widget URL; needs local verification.",
-    ),
-    SourceCandidate(
-        "Le Monde",
-        "fr",
-        "France",
-        "https://www.lemonde.fr",
-        "Le Monde International",
-        "https://www.lemonde.fr/international/rss_full.xml",
-        "world",
-        140,
-        "Previously failed locally; keep disabled unless probe succeeds.",
-    ),
-    SourceCandidate(
-        "Le Monde",
-        "fr",
-        "France",
-        "https://www.lemonde.fr",
-        "Le Monde Économie",
-        "https://www.lemonde.fr/economie/rss_full.xml",
-        "economy",
-        150,
-        "Previously failed locally; keep disabled unless probe succeeds.",
-    ),
-    SourceCandidate(
-        "RFI",
-        "fr",
-        "France",
-        "https://www.rfi.fr/fr/",
         "RFI Français",
-        "https://www.rfi.fr/fr/rss",
-        "world",
-        160,
-        "Previously failed locally; keep disabled unless probe succeeds.",
-    ),
-    SourceCandidate(
+        "Le Monde",
+        "Franceinfo",
+        "France Inter",
         "Radio-Canada",
-        "fr",
-        "Canada",
-        "https://ici.radio-canada.ca/info",
-        "Radio-Canada Nouvelles National",
-        "https://ici.radio-canada.ca/rss/4159",
-        "canada",
-        170,
-        "Optional French candidate; needs local verification.",
-    ),
-    SourceCandidate(
-        "SWI swissinfo.ch",
-        "fr",
-        "Switzerland",
-        "https://www.swissinfo.ch/fre/",
+        "TV5MONDE",
+        "Euronews Français",
         "SWI swissinfo.ch Français",
-        "https://www.swissinfo.ch/fre/rss",
-        "world",
-        180,
-        "Optional French candidate; needs local verification.",
-    ),
-]
+        "Le Figaro",
+        "Libération",
+        "Les Échos",
+        "La Croix",
+        "L’Obs",
+        "L’Express",
+        "Le Point",
+        "Marianne",
+        "Mediapart",
+        "Courrier international",
+        "Ouest-France",
+        "20 Minutes",
+        "Le Parisien",
+        "HuffPost France",
+        "Slate France",
+        "Challenges",
+        "Alternatives Économiques",
+        "Public Sénat",
+        "BFMTV",
+        "TF1 Info",
+        "Usbek & Rica",
+        "Numerama",
+        "Frandroid",
+        "Futura Sciences",
+        "Sciences et Avenir",
+        "Pour la Science",
+        "Actu-Environnement",
+        "Connaissance des Arts",
+        "Télérama",
+    ]
+    for row in data:
+        CANDIDATES.extend(
+            _source(
+                *row[:9],
+                ownership=row[9],
+                paywall=row[10],
+            )
+        )
+    for name in english_more:
+        score = 5 if name in {"Financial Times", "New York Times"} else 4
+        bias = (
+            "lean_right"
+            if name in {"Fox News", "Wall Street Journal"}
+            else "center"
+        )
+        if name in {"CNN", "Fox News", "CNBC", "BFMTV"}:
+            score = 3
+        CANDIDATES.extend(
+            _source(
+                name,
+                "en",
+                "United States",
+                "North America",
+                f"https://www.example.com/{name.lower().replace(' ', '-')}",
+                "digital_native",
+                score,
+                bias,
+                [
+                    _feed(
+                        f"{name} RSS candidate",
+                        None,
+                        "general",
+                        ["world", "us"],
+                    )
+                ],
+            )
+        )
+    for name in french_more:
+        score = (
+            5
+            if name
+            in {
+                "France 24 Français",
+                "RFI Français",
+                "Le Monde",
+                "Radio-Canada",
+                "Euronews Français",
+            }
+            else 4
+        )
+        if name in {"BFMTV", "20 Minutes"}:
+            score = 3
+        CANDIDATES.extend(
+            _source(
+                name,
+                "fr",
+                "France",
+                "Europe",
+                f"https://www.example.com/{name.lower().replace(' ', '-')}",
+                "newspaper",
+                score,
+                "center",
+                [
+                    _feed(
+                        f"{name} RSS candidate",
+                        None,
+                        "general",
+                        ["france", "world"],
+                    )
+                ],
+            )
+        )
+
+
+_add_catalog()
 
 
 def probe_candidate(
     candidate: SourceCandidate, client: httpx.Client
 ) -> ProbeResult:
     start = perf_counter()
+    if not candidate.feed_url:
+        return ProbeResult(candidate, "failed", None, 0.0, 0, FIND_RSS)
     http_status = None
     entries_count = 0
     error = None
@@ -268,12 +668,12 @@ def probe_candidate(
     except Exception as exc:
         error = str(exc)
     return ProbeResult(
-        candidate=candidate,
-        status=status,
-        http_status=http_status,
-        elapsed_seconds=perf_counter() - start,
-        entries_count=entries_count,
-        error=error,
+        candidate,
+        status,
+        http_status,
+        perf_counter() - start,
+        entries_count,
+        error,
     )
 
 
@@ -281,9 +681,7 @@ def probe_candidates(
     candidates: list[SourceCandidate] | None = None,
 ) -> list[ProbeResult]:
     timeout = httpx.Timeout(
-        TOTAL_TIMEOUT,
-        connect=CONNECT_TIMEOUT,
-        read=READ_TIMEOUT,
+        TOTAL_TIMEOUT, connect=CONNECT_TIMEOUT, read=READ_TIMEOUT
     )
     results = []
     with httpx.Client(timeout=timeout, follow_redirects=True) as client:
@@ -292,46 +690,106 @@ def probe_candidates(
     return results
 
 
+def _apply_source(source: NewsSource, c: SourceCandidate) -> None:
+    primary_language = c.language_primary or c.language
+    source.language = primary_language
+    source.display_name = c.display_name or c.source_name
+    source.language_primary = primary_language
+    source.languages_available = ",".join(
+        c.languages_available or [primary_language]
+    )
+    source.country = c.country
+    source.region = c.region
+    source.homepage_url = c.homepage_url
+    source.outlet_type = c.outlet_type
+    source.ownership_type = c.ownership_type
+    source.paywall_level = c.paywall_level
+    source.editorial_reliability_score = c.editorial_reliability_score
+    source.bias_profile = c.bias_profile
+    source.rating_confidence = c.rating_confidence
+    source.rating_notes = c.rating_notes
+    source.default_priority = c.default_priority
+    source.tags = ",".join(c.tags)
+
+
+def upsert_candidate(session: Session, c: SourceCandidate) -> bool:
+    source = session.scalar(
+        select(NewsSource).where(NewsSource.name == c.source_name)
+    )
+    if source is None:
+        source = NewsSource(
+            name=c.source_name,
+            language=c.language_primary or c.language,
+            country=c.country,
+            homepage_url=c.homepage_url,
+        )
+        session.add(source)
+        session.flush()
+    _apply_source(source, c)
+    stmt = select(FeedSubscription).where(
+        FeedSubscription.title == c.feed_title
+    )
+    if c.feed_url:
+        stmt = select(FeedSubscription).where(
+            FeedSubscription.feed_url == c.feed_url
+        )
+    feed = session.scalar(stmt)
+    created = feed is None
+    if feed is None:
+        feed = FeedSubscription(
+            source_id=source.id,
+            title=c.feed_title,
+            feed_url=c.feed_url,
+            category=c.category,
+            language=c.language,
+        )
+        session.add(feed)
+    feed.source_id = source.id
+    feed.title = c.feed_title
+    feed.feed_url = c.feed_url
+    feed.category = c.category
+    feed.language = c.language
+    feed.tags = ",".join(c.feed_tags)
+    feed.is_official_url = c.is_official_url
+    feed.url_confidence = c.url_confidence
+    feed.enabled_by_default = c.enabled_by_default
+    feed.notes = c.notes
+    feed.is_enabled = c.enabled_by_default and bool(c.feed_url)
+    return created
+
+
+def seed_all_candidate_sources(session: Session) -> int:
+    count = 0
+    for candidate in CANDIDATES:
+        if upsert_candidate(session, candidate):
+            count += 1
+    session.commit()
+    return count
+
+
 def seed_accessible_sources(session: Session) -> list[ProbeResult]:
     results = probe_candidates()
     for result in results:
-        candidate = result.candidate
-        source = session.scalar(
-            select(NewsSource).where(NewsSource.name == candidate.source_name)
-        )
-        if source is None:
-            source = NewsSource(
-                name=candidate.source_name,
-                language=candidate.language,
-                country=candidate.country,
-                homepage_url=candidate.homepage_url,
+        upsert_candidate(session, result.candidate)
+        if result.candidate.feed_url:
+            feed = session.scalar(
+                select(FeedSubscription).where(
+                    FeedSubscription.feed_url == result.candidate.feed_url
+                )
             )
-            session.add(source)
-            session.flush()
-        feed = session.scalar(
-            select(FeedSubscription).where(
-                FeedSubscription.feed_url == candidate.feed_url
+        else:
+            feed = session.scalar(
+                select(FeedSubscription).where(
+                    FeedSubscription.title == result.candidate.feed_title
+                )
             )
-        )
-        if feed is None:
-            feed = FeedSubscription(
-                source_id=source.id,
-                title=candidate.feed_title,
-                feed_url=candidate.feed_url,
-                category=candidate.category,
-                language=candidate.language,
-            )
-            session.add(feed)
-        feed.source_id = source.id
-        feed.title = candidate.feed_title
-        feed.category = candidate.category
-        feed.language = candidate.language
-        feed.is_enabled = result.is_success
-        feed.last_fetch_status = result.status
-        feed.last_http_status = result.http_status
-        feed.last_entries_count = result.entries_count
-        feed.last_new_articles_count = 0
-        feed.last_skipped_articles_count = 0
-        feed.last_fetch_error = result.error
+        if feed is not None:
+            feed.is_enabled = result.is_success
+            feed.last_fetch_status = result.status
+            feed.last_http_status = result.http_status
+            feed.last_entries_count = result.entries_count
+            feed.last_new_articles_count = 0
+            feed.last_skipped_articles_count = 0
+            feed.last_fetch_error = result.error
     session.commit()
     return results

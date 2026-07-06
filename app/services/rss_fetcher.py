@@ -115,6 +115,8 @@ def fetch_feed(
     )
     started = time.perf_counter()
     try:
+        if not feed.feed_url:
+            raise ValueError("Feed URL is empty; needs URL verification")
         response = client.get(feed.feed_url)
         result.http_status = response.status_code
         response.raise_for_status()
@@ -187,6 +189,8 @@ def fetch_enabled_feeds(session: Session, *, mode: str = "cli") -> FetchRun:
         select(FeedSubscription)
         .options(joinedload(FeedSubscription.source))
         .where(FeedSubscription.is_enabled.is_(True))
+        .where(FeedSubscription.feed_url.is_not(None))
+        .where(FeedSubscription.feed_url != "")
         .order_by(FeedSubscription.id)
     ).all()
     run.total_feeds = len(feeds)
@@ -236,5 +240,18 @@ def test_feed_by_id(session: Session, feed_id: int) -> FeedFetchStats:
     )
     if feed is None:
         raise ValueError("Feed not found")
+    if not feed.feed_url:
+        result = FeedFetchStats(
+            feed_id=feed.id,
+            source_name=feed.source.name,
+            feed_title=feed.title,
+            feed_url=feed.feed_url or "",
+            language=feed.language,
+            status="failed",
+            error="Feed URL is empty; needs URL verification",
+        )
+        update_feed_status(feed, result, datetime.now(UTC))
+        session.commit()
+        return result
     with httpx.Client(timeout=20.0, follow_redirects=True) as client:
         return fetch_feed(session, client, feed)
