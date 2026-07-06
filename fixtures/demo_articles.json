@@ -1,14 +1,98 @@
 [
-  {"source_name":"Demo Times","language":"en","external_id":"en-space-1","title":"Space agency launches new lunar weather satellite","summary":"The spacecraft will monitor radiation and storms around the Moon.","url":"https://demo.local/en/space-1?utm_source=x"},
-  {"source_name":"Demo Post","language":"en","external_id":"en-space-2","title":"New lunar weather satellite launched by space agency","summary":"A probe was sent to track moon radiation and solar storms.","url":"https://demo.local/en/space-2"},
-  {"source_name":"Demo Wire","language":"en","external_id":"en-space-3","title":"Moon weather probe begins mission after launch","summary":"The lunar satellite will observe radiation and storm conditions.","url":"https://demo.local/en/space-3#frag"},
-  {"source_name":"Demo Monde","language":"fr","external_id":"fr-rail-1","title":"La nouvelle ligne de train rapide ouvre entre Lyon et Turin","summary":"Les premiers passagers ont emprunté la liaison ferroviaire transalpine.","url":"https://demo.local/fr/rail-1"},
-  {"source_name":"Demo France","language":"fr","external_id":"fr-rail-2","title":"Ouverture d'une ligne ferroviaire rapide Lyon-Turin","summary":"La liaison de train transalpine accueille ses premiers voyageurs.","url":"https://demo.local/fr/rail-2"},
-  {"source_name":"Demo Info","language":"fr","external_id":"fr-rail-3","title":"Premiers voyageurs sur le train rapide entre Turin et Lyon","summary":"Le nouveau service ferroviaire relie désormais les deux villes.","url":"https://demo.local/fr/rail-3"},
-  {"source_name":"Demo Times","language":"en","external_id":"en-food","title":"City chefs celebrate a record tomato harvest","summary":"Restaurants introduced seasonal menus after farms reported high yields.","url":"https://demo.local/en/food"},
-  {"source_name":"Demo Post","language":"en","external_id":"en-cyber","title":"University opens a new cybersecurity lab","summary":"Students will study network defense in the renovated facility.","url":"https://demo.local/en/cyber"},
-  {"source_name":"Demo Wire","language":"en","external_id":"en-sports","title":"Local marathon winner breaks course record","summary":"Thousands of runners finished the annual race downtown.","url":"https://demo.local/en/sports"},
-  {"source_name":"Demo Monde","language":"fr","external_id":"fr-museum","title":"Un musée présente une exposition sur les océans","summary":"Les visiteurs découvrent des cartes anciennes et des récifs coralliens.","url":"https://demo.local/fr/museum"},
-  {"source_name":"Demo France","language":"fr","external_id":"fr-energy","title":"Une commune installe des panneaux solaires sur l'école","summary":"Le projet réduira la facture énergétique des bâtiments publics.","url":"https://demo.local/fr/energy"},
-  {"source_name":"Demo Info","language":"fr","external_id":"fr-book","title":"Un festival littéraire accueille de jeunes auteurs","summary":"Des ateliers et lectures sont organisés pendant tout le week-end.","url":"https://demo.local/fr/book"}
+  {
+    "source_name": "Demo Times",
+    "language": "en",
+    "external_id": "en-space-1",
+    "title": "NASA Artemis Weather Scout lunar satellite launches to monitor Moon radiation and solar storms",
+    "summary": "The Artemis Weather Scout spacecraft will monitor Moon radiation, charged particles and solar storms near the lunar surface before future crewed astronaut missions.",
+    "url": "https://demo.local/en/space-1?utm_source=x"
+  },
+  {
+    "source_name": "Demo Post",
+    "language": "en",
+    "external_id": "en-space-2",
+    "title": "NASA launches Artemis Weather Scout lunar satellite for Moon radiation and solar storms",
+    "summary": "The Artemis Weather Scout spacecraft will monitor Moon radiation, charged particles and solar storms near the lunar surface to support future crewed astronaut missions.",
+    "url": "https://demo.local/en/space-2"
+  },
+  {
+    "source_name": "Demo Wire",
+    "language": "en",
+    "external_id": "en-space-3",
+    "title": "NASA Moon weather satellite Artemis Weather Scout starts tracking radiation and solar storms",
+    "summary": "After launch, the Artemis Weather Scout lunar spacecraft will monitor Moon radiation, charged particles and solar storms near the lunar surface for future crewed missions.",
+    "url": "https://demo.local/en/space-3#frag"
+  },
+  {
+    "source_name": "Demo Monde",
+    "language": "fr",
+    "external_id": "fr-rail-1",
+    "title": "La ligne ferroviaire Lyon-Turin à grande vitesse ouvre avec le tunnel transalpin",
+    "summary": "Les autorités françaises et italiennes ont inauguré la liaison ferroviaire Lyon-Turin, avec un tunnel transalpin et des trains rapides pour passagers et fret.",
+    "url": "https://demo.local/fr/rail-1"
+  },
+  {
+    "source_name": "Demo France",
+    "language": "fr",
+    "external_id": "fr-rail-2",
+    "title": "Ouverture de la liaison ferroviaire Lyon-Turin à grande vitesse dans le tunnel transalpin",
+    "summary": "Le service Lyon-Turin circule dans le tunnel transalpin entre la France et l Italie, avec des trains rapides pour passagers et fret.",
+    "url": "https://demo.local/fr/rail-2"
+  },
+  {
+    "source_name": "Demo Info",
+    "language": "fr",
+    "external_id": "fr-rail-3",
+    "title": "Premiers voyageurs sur la ligne ferroviaire Lyon-Turin à grande vitesse et le tunnel transalpin",
+    "summary": "La liaison ferroviaire Lyon-Turin relie désormais la France et l Italie avec le tunnel transalpin, des trains rapides pour passagers et fret.",
+    "url": "https://demo.local/fr/rail-3"
+  },
+  {
+    "source_name": "Demo Times",
+    "language": "en",
+    "external_id": "en-food",
+    "title": "City chefs celebrate a record tomato harvest",
+    "summary": "Restaurants introduced seasonal menus after nearby farms reported unusually high tomato yields this summer.",
+    "url": "https://demo.local/en/food"
+  },
+  {
+    "source_name": "Demo Post",
+    "language": "en",
+    "external_id": "en-cyber",
+    "title": "University opens a new cybersecurity lab",
+    "summary": "Students will study network defense, malware analysis and secure software design in the renovated facility.",
+    "url": "https://demo.local/en/cyber"
+  },
+  {
+    "source_name": "Demo Wire",
+    "language": "en",
+    "external_id": "en-sports",
+    "title": "Local marathon winner breaks course record",
+    "summary": "Thousands of runners finished the annual downtown race as volunteers staffed water stations along the route.",
+    "url": "https://demo.local/en/sports"
+  },
+  {
+    "source_name": "Demo Monde",
+    "language": "fr",
+    "external_id": "fr-museum",
+    "title": "Un musée présente une exposition sur les océans",
+    "summary": "Les visiteurs découvrent des cartes anciennes, des maquettes de navires et des récifs coralliens pendant l'exposition.",
+    "url": "https://demo.local/fr/museum"
+  },
+  {
+    "source_name": "Demo France",
+    "language": "fr",
+    "external_id": "fr-energy",
+    "title": "Une commune installe des panneaux solaires sur l'école",
+    "summary": "Le projet municipal réduira la facture énergétique des bâtiments publics et financera de nouveaux équipements scolaires.",
+    "url": "https://demo.local/fr/energy"
+  },
+  {
+    "source_name": "Demo Info",
+    "language": "fr",
+    "external_id": "fr-book",
+    "title": "Un festival littéraire accueille de jeunes auteurs",
+    "summary": "Des ateliers d'écriture, des lectures publiques et des rencontres avec éditeurs sont organisés pendant tout le week-end.",
+    "url": "https://demo.local/fr/book"
+  }
 ]

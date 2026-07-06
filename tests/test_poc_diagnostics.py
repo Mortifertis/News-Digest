@@ -157,3 +157,84 @@ def test_unrelated_demo_articles_remain_separate():
         )
         assert len(rows) == 6
         assert len(set(rows)) == 6
+
+
+def test_demo_loads_twelve_articles_and_eight_clusters():
+    from app.db.models import StoryCluster
+
+    with session_factory() as session:
+        load_demo_articles(session)
+        assert session.scalar(select(func.count(Article.id))) == 12
+        assert session.scalar(select(func.count(StoryCluster.id))) == 8
+
+
+def test_related_demo_pairwise_scores_are_above_threshold():
+    from itertools import combinations
+
+    from rapidfuzz import fuzz
+
+    from app.core.config import get_settings
+
+    fixture = json.loads(Path("fixtures/demo_articles.json").read_text())
+    related_ids = {
+        "en-space-1",
+        "en-space-2",
+        "en-space-3",
+        "fr-rail-1",
+        "fr-rail-2",
+        "fr-rail-3",
+    }
+    texts = {}
+    languages = {}
+    for item in fixture:
+        if item["external_id"] in related_ids:
+            fields = normalize_article_fields(
+                item["title"], item["summary"], item["url"]
+            )
+            texts[item["external_id"]] = (
+                f"{fields['normalized_title']} {fields['normalized_summary']}"
+            ).strip()
+            languages[item["external_id"]] = item["language"]
+
+    threshold = get_settings().fuzzy_duplicate_threshold
+    for left_id, right_id in combinations(texts, 2):
+        if languages[left_id] == languages[right_id]:
+            score = fuzz.token_set_ratio(texts[left_id], texts[right_id])
+            assert score >= threshold
+            assert score >= 78
+
+
+def test_unrelated_demo_pairwise_scores_stay_below_threshold():
+    from rapidfuzz import fuzz
+
+    from app.core.config import get_settings
+
+    fixture = json.loads(Path("fixtures/demo_articles.json").read_text())
+    related_ids = {
+        "en-space-1",
+        "en-space-2",
+        "en-space-3",
+        "fr-rail-1",
+        "fr-rail-2",
+        "fr-rail-3",
+    }
+    threshold = get_settings().fuzzy_duplicate_threshold
+    texts = []
+    for item in fixture:
+        fields = normalize_article_fields(
+            item["title"], item["summary"], item["url"]
+        )
+        text = (
+            f"{fields['normalized_title']} {fields['normalized_summary']}"
+        ).strip()
+        texts.append((item["external_id"], item["language"], text))
+
+    for item_id, language, text in texts:
+        if item_id in related_ids:
+            continue
+        for related_id, related_language, related_text in texts:
+            if related_id not in related_ids or language != related_language:
+                continue
+            score = fuzz.token_set_ratio(text, related_text)
+            assert score < threshold
+            assert score < 60

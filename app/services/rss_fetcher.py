@@ -130,7 +130,10 @@ def fetch_enabled_feeds(session: Session) -> list[FeedFetchResult]:
         .order_by(FeedSubscription.id)
     ).all()
     results = []
-    with httpx.Client(timeout=20.0, follow_redirects=True) as client:
+    with httpx.Client(
+        timeout=httpx.Timeout(30.0, connect=10.0, read=20.0),
+        follow_redirects=True,
+    ) as client:
         for feed in feeds:
             results.append(fetch_feed(session, client, feed))
     return results

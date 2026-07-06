@@ -85,3 +85,23 @@ th {
         font-size: .9rem
     }
 }
+
+.badge {
+    border-radius: 0.5rem;
+    padding: 0.15rem 0.45rem;
+}
+
+.badge-success {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.badge-failed {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-never {
+    background: #e5e7eb;
+    color: #374151;
+}

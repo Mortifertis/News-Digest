@@ -59,6 +59,7 @@ def cluster_articles(session: Session) -> int:
                 match_type=match_type,
             )
         )
+        session.flush()
         processed += 1
     session.commit()
     return processed

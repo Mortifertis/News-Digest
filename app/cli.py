@@ -5,11 +5,18 @@ from pathlib import Path
 
 from rapidfuzz import fuzz
 
+from app.core.config import get_settings
 from app.db.session import SessionLocal
 from app.services.cluster_service import cluster_articles
 from app.services.demo_loader import load_demo_articles, reset_article_data
 from app.services.normalizer import normalize_article_fields
 from app.services.rss_fetcher import FeedFetchResult, fetch_enabled_feeds
+from app.services.source_candidates import (
+    CANDIDATES,
+    ProbeResult,
+    probe_candidates,
+    seed_accessible_sources,
+)
 from app.services.stats_service import collect_stats
 
 
@@ -82,6 +89,7 @@ def run_stats() -> None:
 def run_demo_scores() -> None:
     fixture_path = Path("fixtures/demo_articles.json")
     articles = json.loads(fixture_path.read_text())
+    threshold = get_settings().fuzzy_duplicate_threshold
     by_language: dict[str, list[tuple[str, str]]] = {}
     for item in articles:
         fields = normalize_article_fields(
@@ -100,7 +108,54 @@ def run_demo_scores() -> None:
             left_id, left_text = left
             right_id, right_text = right
             score = fuzz.token_set_ratio(left_text, right_text)
-            print(f"  {left_id} <> {right_id}: {score:.1f}")
+            verdict = "PASS" if score >= threshold else "FAIL"
+            print(
+                f"  {left_id} <> {right_id}: {score:.1f} / "
+                f"threshold {threshold} {verdict}"
+            )
+
+
+def print_probe_result(result: ProbeResult) -> None:
+    candidate = result.candidate
+    print("-" * 72)
+    print(f"Source: {candidate.source_name}")
+    print(f"Feed: {candidate.feed_title}")
+    print(f"Language: {candidate.language}")
+    print(f"URL: {candidate.feed_url}")
+    print(f"Status: {result.status}")
+    print(f"HTTP status: {result.http_status or 'n/a'}")
+    print(f"Elapsed seconds: {result.elapsed_seconds:.2f}")
+    print(f"Parsed entries: {result.entries_count}")
+    if result.error:
+        print(f"Error: {result.error}")
+
+
+def run_list_candidates() -> None:
+    for candidate in sorted(CANDIDATES, key=lambda item: item.priority):
+        print("-" * 72)
+        print(f"Source: {candidate.source_name}")
+        print(f"Language: {candidate.language}")
+        print(f"Feed: {candidate.feed_title}")
+        print(f"URL: {candidate.feed_url}")
+        print(f"Priority: {candidate.priority}")
+        print(f"Notes: {candidate.notes}")
+
+
+def run_probe_feeds() -> list[ProbeResult]:
+    results = probe_candidates()
+    for result in results:
+        print_probe_result(result)
+    return results
+
+
+def run_seed_accessible_sources() -> list[ProbeResult]:
+    with SessionLocal() as session:
+        results = seed_accessible_sources(session)
+    for result in results:
+        print_probe_result(result)
+    enabled = sum(result.is_success for result in results)
+    print(f"Enabled {enabled} accessible feed(s).")
+    return results
 
 
 def main() -> None:
@@ -115,6 +170,9 @@ def main() -> None:
             "refetch",
             "load-demo",
             "demo-scores",
+            "list-candidates",
+            "probe-feeds",
+            "seed-accessible-sources",
         ),
     )
     parser.add_argument(
@@ -147,6 +205,12 @@ def main() -> None:
         run_stats()
     elif args.command == "demo-scores":
         run_demo_scores()
+    elif args.command == "list-candidates":
+        run_list_candidates()
+    elif args.command == "probe-feeds":
+        run_probe_feeds()
+    elif args.command == "seed-accessible-sources":
+        run_seed_accessible_sources()
 
 
 if __name__ == "__main__":

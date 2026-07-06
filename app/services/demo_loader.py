@@ -46,9 +46,12 @@ def _source_and_feed(
             feed_url=feed_url,
             category="demo",
             language=language,
+            is_enabled=False,
         )
         session.add(feed)
         session.flush()
+    else:
+        feed.is_enabled = False
     return source.id, feed.id
 
 
