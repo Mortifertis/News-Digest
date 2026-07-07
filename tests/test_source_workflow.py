@@ -347,3 +347,93 @@ def test_sources_url_editor_valid_invalid_clear_and_verified_status():
     finally:
         app.dependency_overrides.clear()
         session.close()
+
+
+def test_sources_empty_dropdown_filters_return_200():
+    session = session_factory()
+    seed_all_candidates(session)
+
+    def override_session():
+        yield session
+
+    app.dependency_overrides[get_session] = override_session
+    try:
+        client = TestClient(app)
+        path = (
+            "/sources?enabled=&url_status=&language=en&country="
+            "&category=&outlet_type=&reliability_score="
+            "&bias_profile=&last_fetch_status="
+        )
+        assert client.get(path).status_code == 200
+        paths = [
+            "/sources?country=Canada",
+            "/sources?reliability_score=",
+            "/sources?reliability_score=bad",
+            "/sources?enabled=enabled",
+            "/sources?enabled=disabled",
+        ]
+        for item in paths:
+            assert client.get(item).status_code == 200
+    finally:
+        app.dependency_overrides.clear()
+        session.close()
+
+
+def test_settings_full_payload_and_defaults():
+    from app.services.settings_service import get_all_settings_with_defaults
+
+    session = session_factory()
+
+    def override_session():
+        yield session
+
+    app.dependency_overrides[get_session] = override_session
+    try:
+        client = TestClient(app)
+        payload = {
+            "fetch_interval_minutes": "60",
+            "max_entries_per_feed": "20",
+            "request_timeout_seconds": "10",
+            "auto_cluster_after_fetch": "false",
+            "fuzzy_threshold_default": "80",
+            "fuzzy_threshold_en": "81",
+            "fuzzy_threshold_fr": "82",
+            "fuzzy_candidate_window_hours": "48",
+            "min_text_length_for_fuzzy": "50",
+            "items_per_page": "20",
+            "default_language_filter": "en",
+            "default_feed_sort": "source",
+            "article_retention_days": "30",
+        }
+        assert client.get("/settings").status_code == 200
+        assert client.post("/settings", data=payload).status_code == 200
+        defaults = get_all_settings_with_defaults(session)
+        assert set(payload).issubset(defaults)
+        assert defaults["max_entries_per_feed"] == "20"
+        bad = dict(payload)
+        bad["fetch_interval_minutes"] = "17"
+        assert client.post("/settings", data=bad).status_code == 200
+        bad = dict(payload)
+        bad["fuzzy_threshold_en"] = "200"
+        assert client.post("/settings", data=bad).status_code == 200
+    finally:
+        app.dependency_overrides.clear()
+        session.close()
+
+
+def test_fetch_uses_max_entries_setting(monkeypatch):
+    monkeypatch.setattr("app.services.rss_fetcher.httpx.Client", FakeClient)
+    with session_factory() as session:
+        session.add(AppSetting(key="max_entries_per_feed", value="10"))
+        add_feed(session)
+        run = fetch_enabled_feeds(session)
+        assert run.total_entries == 1
+
+
+def test_scheduler_reads_fetch_interval_setting():
+    from app.services.settings_service import get_int_setting
+
+    with session_factory() as session:
+        session.add(AppSetting(key="fetch_interval_minutes", value="60"))
+        session.commit()
+        assert get_int_setting(session, "fetch_interval_minutes", 0) == 60

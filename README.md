@@ -153,6 +153,20 @@ Saved 50 new articles.
 
 Failed feeds should look similar but with `Status: failed` and an `Error:` line.
 
+
+### Real RSS mode after demo validation
+
+Demo data is only for validation. For real RSS use, run:
+
+```bash
+python -m app.cli reset-data
+python -m app.cli seed-all-candidates
+```
+
+Then enable real feeds in `/sources` and run fetch. The clearer alias
+`python -m app.cli clear-articles` performs the same article/cluster cleanup as
+`reset-data` while keeping sources, feeds, settings, and fetch-run history.
+
 ### Offline demo clustering test
 
 Use the deterministic local fixture when network/VPN conditions make live RSS

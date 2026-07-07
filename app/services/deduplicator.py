@@ -4,8 +4,8 @@ from rapidfuzz import fuzz
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.config import get_settings
 from app.db.models import Article, ClusterArticle, StoryCluster
+from app.services.settings_service import get_int_setting
 
 
 def article_text(article: Article) -> str:
@@ -71,24 +71,42 @@ def _cluster_articles(
 def find_fuzzy_cluster(
     session: Session, article: Article
 ) -> tuple[StoryCluster, float] | None:
-    settings = get_settings()
-    since = datetime.now(UTC) - timedelta(hours=settings.fuzzy_lookback_hours)
+    window_hours = get_int_setting(
+        session, "fuzzy_candidate_window_hours", 72
+    )
+    since = datetime.now(UTC) - timedelta(hours=window_hours)
     best_cluster = None
     best_score = 0.0
     new_text = article_text(article)
+    min_length = get_int_setting(session, "min_text_length_for_fuzzy", 100)
+    if len(new_text) < min_length:
+        return None
 
     for cluster in _candidate_clusters(session, article, since):
         cluster_best_score = 0.0
         for candidate in _cluster_articles(session, cluster, article, since):
-            score = float(
-                fuzz.token_set_ratio(new_text, article_text(candidate))
+            candidate_text = article_text(candidate)
+            if len(candidate_text) < min_length:
+                continue
+            score = max(
+                float(fuzz.token_set_ratio(new_text, candidate_text)),
+                float(
+                    fuzz.token_set_ratio(
+                        article.normalized_title,
+                        candidate.normalized_title,
+                    )
+                ),
             )
             cluster_best_score = max(cluster_best_score, score)
         if cluster_best_score > best_score:
             best_cluster = cluster
             best_score = cluster_best_score
 
-    if best_cluster is None or best_score < settings.fuzzy_duplicate_threshold:
+    threshold = get_int_setting(
+        session, f"fuzzy_threshold_{article.language}",
+        get_int_setting(session, "fuzzy_threshold_default", 82),
+    )
+    if best_cluster is None or best_score < threshold:
         return None
     return best_cluster, best_score
 

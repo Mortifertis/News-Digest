@@ -8,9 +8,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import distinct, func, select
 from sqlalchemy.orm import Session, joinedload
 
-from app.cli import ALLOWED_INTERVALS
 from app.db.models import (
-    AppSetting,
     Article,
     ClusterArticle,
     FeedSubscription,
@@ -19,8 +17,14 @@ from app.db.models import (
     StoryCluster,
 )
 from app.db.session import get_session
-from app.services.cluster_service import cluster_articles
 from app.services.rss_fetcher import fetch_enabled_feeds, test_feed_by_id
+from app.services.settings_service import (
+    SETTING_SPECS,
+    get_all_settings_with_defaults,
+    get_int_setting,
+    set_setting,
+    validate_settings_payload,
+)
 
 router = APIRouter()
 SessionDep = Annotated[Session, Depends(get_session)]
@@ -32,7 +36,7 @@ def redirect(path: str, message: str) -> RedirectResponse:
     return RedirectResponse(f"{path}?message={message}", status_code=303)
 
 
-def cluster_cards(session: Session, filters: dict):
+def cluster_cards(session: Session, filters: dict, limit: int | None = None):
     source_counts = dict(
         session.execute(
             select(
@@ -51,7 +55,14 @@ def cluster_cards(session: Session, filters: dict):
     )
     if filters.get("language"):
         stmt = stmt.where(StoryCluster.language == filters["language"])
-    stmt = stmt.order_by(StoryCluster.last_seen_at.desc())
+    sort = filters.get("sort") or "newest"
+    if sort == "oldest":
+        stmt = stmt.order_by(StoryCluster.last_seen_at.asc())
+    elif sort == "source":
+        stmt = stmt.join(StoryCluster.lead_article).join(Article.source)
+        stmt = stmt.order_by(NewsSource.name, StoryCluster.last_seen_at.desc())
+    else:
+        stmt = stmt.order_by(StoryCluster.last_seen_at.desc())
     clusters = session.scalars(stmt).unique().all()
     rows = []
     for cluster in clusters:
@@ -72,7 +83,9 @@ def cluster_cards(session: Session, filters: dict):
         ):
             continue
         rows.append((cluster, source_counts.get(cluster.id, 0)))
-    return rows
+    if filters.get("sort") == "largest_cluster":
+        rows.sort(key=lambda item: len(item[0].articles), reverse=True)
+    return rows[:limit] if limit else rows
 
 
 @router.get("/")
@@ -158,6 +171,34 @@ def dashboard(
     )
 
 
+def clean_filter(value: str | None) -> str | None:
+    if value is None:
+        return None
+    value = value.strip()
+    return value or None
+
+
+def parse_enabled_filter(value: str | None) -> bool | None:
+    cleaned = clean_filter(value)
+    if cleaned in {None, "all"}:
+        return None
+    if cleaned == "enabled":
+        return True
+    if cleaned == "disabled":
+        return False
+    return None
+
+
+def parse_reliability_filter(value: str | None) -> int | None:
+    cleaned = clean_filter(value)
+    if cleaned is None:
+        return None
+    try:
+        return int(cleaned)
+    except ValueError:
+        return None
+
+
 @router.get("/sources")
 def sources(
     request: Request,
@@ -169,52 +210,77 @@ def sources(
     country: str | None = None,
     category: str | None = None,
     outlet_type: str | None = None,
-    reliability_score: int | None = None,
+    reliability_score: str | None = None,
     bias_profile: str | None = None,
     last_fetch_status: str | None = None,
 ):
+    filters = {
+        "enabled": clean_filter(enabled) or "",
+        "url_status": clean_filter(url_status) or "",
+        "language": clean_filter(language) or "",
+        "country": clean_filter(country) or "",
+        "category": clean_filter(category) or "",
+        "outlet_type": clean_filter(outlet_type) or "",
+        "reliability_score": clean_filter(reliability_score) or "",
+        "bias_profile": clean_filter(bias_profile) or "",
+        "last_fetch_status": clean_filter(last_fetch_status) or "",
+    }
     stmt = select(FeedSubscription).options(
         joinedload(FeedSubscription.source)
     )
-    if enabled == "true":
-        stmt = stmt.where(FeedSubscription.is_enabled.is_(True))
-    if enabled == "false":
-        stmt = stmt.where(FeedSubscription.is_enabled.is_(False))
-    source_joined = False
-    if url_status == "has_url":
+    enabled_value = parse_enabled_filter(enabled)
+    if enabled_value is not None:
+        stmt = stmt.where(FeedSubscription.is_enabled.is_(enabled_value))
+    allowed_url_statuses = {
+        "has_url",
+        "needs_url_verification",
+        "verified_official",
+        "candidate_pattern",
+        "api_or_licensed_only",
+        "unavailable",
+    }
+    normalized_url_status = clean_filter(url_status)
+    if normalized_url_status == "all":
+        normalized_url_status = None
+    if normalized_url_status == "needs_url_verification":
+        normalized_url_status = "needs_verification"
+    if normalized_url_status == "has_url":
         stmt = stmt.where(FeedSubscription.feed_url.is_not(None))
-    if url_status == "needs_verification":
+        stmt = stmt.where(FeedSubscription.feed_url != "")
+    elif normalized_url_status in allowed_url_statuses:
         stmt = stmt.where(
-            FeedSubscription.rss_url_status == "needs_verification"
+            FeedSubscription.rss_url_status == normalized_url_status
         )
-    if language:
-        stmt = stmt.where(FeedSubscription.language == language)
-    if country:
+    source_joined = False
+    if filters["language"]:
+        stmt = stmt.where(FeedSubscription.language == filters["language"])
+    if filters["country"]:
         stmt = stmt.join(FeedSubscription.source)
         source_joined = True
-        stmt = stmt.where(NewsSource.country == country)
-    if category:
-        stmt = stmt.where(FeedSubscription.category == category)
-    if outlet_type:
+        stmt = stmt.where(NewsSource.country == filters["country"])
+    if filters["category"]:
+        stmt = stmt.where(FeedSubscription.category == filters["category"])
+    if filters["outlet_type"]:
         if not source_joined:
             stmt = stmt.join(FeedSubscription.source)
             source_joined = True
-        stmt = stmt.where(NewsSource.outlet_type == outlet_type)
-    if reliability_score:
+        stmt = stmt.where(NewsSource.outlet_type == filters["outlet_type"])
+    reliability_value = parse_reliability_filter(reliability_score)
+    if reliability_value is not None:
         if not source_joined:
             stmt = stmt.join(FeedSubscription.source)
             source_joined = True
         stmt = stmt.where(
-            NewsSource.editorial_reliability_score == reliability_score
+            NewsSource.editorial_reliability_score == reliability_value
         )
-    if bias_profile:
+    if filters["bias_profile"]:
         if not source_joined:
             stmt = stmt.join(FeedSubscription.source)
             source_joined = True
-        stmt = stmt.where(NewsSource.bias_profile == bias_profile)
-    if last_fetch_status:
+        stmt = stmt.where(NewsSource.bias_profile == filters["bias_profile"])
+    if filters["last_fetch_status"]:
         stmt = stmt.where(
-            FeedSubscription.last_fetch_status == last_fetch_status
+            FeedSubscription.last_fetch_status == filters["last_fetch_status"]
         )
     feeds = (
         session.scalars(stmt.order_by(FeedSubscription.title)).unique().all()
@@ -252,11 +318,10 @@ def sources(
         {
             "feeds": feeds,
             "message": message,
-            "filters": dict(request.query_params),
+            "filters": filters,
             "filter_options": filter_options,
         },
     )
-
 
 @router.post("/sources/{feed_id}/url")
 async def save_source_url(
@@ -268,6 +333,7 @@ async def save_source_url(
         "verified_official",
         "candidate_pattern",
         "needs_verification",
+        "needs_url_verification",
         "api_or_licensed_only",
         "unavailable",
     }
@@ -283,6 +349,8 @@ async def save_source_url(
     url = feed_url.strip()
     if url and not (url.startswith("http://") or url.startswith("https://")):
         return redirect("/sources", "Invalid feed URL")
+    if rss_url_status == "needs_url_verification":
+        rss_url_status = "needs_verification"
     if rss_url_status not in allowed:
         rss_url_status = "candidate_pattern" if url else "needs_verification"
     feed.feed_url = url or None
@@ -345,12 +413,6 @@ def test_source(feed_id: int, session: SessionDep):
 def fetch_run(session: SessionDep):
     try:
         run = fetch_enabled_feeds(session, mode="manual")
-        if run.total_new_articles:
-            cluster_articles(session)
-            run.total_clusters_after = (
-                session.scalar(select(func.count(StoryCluster.id))) or 0
-            )
-            session.commit()
         return RedirectResponse(f"/fetch-runs/{run.id}", status_code=303)
     except Exception:
         logger.exception("Fetch run failed")
@@ -366,19 +428,31 @@ def feed(
     category: str | None = None,
     multi_article_only: bool = False,
     multi_source_only: bool = False,
+    sort: str | None = None,
 ):
+    if language is None:
+        language = get_all_settings_with_defaults(session)[
+            "default_language_filter"
+        ] or None
+    if sort is None:
+        sort = get_all_settings_with_defaults(session)["default_feed_sort"]
     filters = {
         "language": language,
         "source": source,
         "category": category,
         "multi_article_only": multi_article_only,
         "multi_source_only": multi_source_only,
+        "sort": sort,
     }
     return templates.TemplateResponse(
         request,
         "feed.html",
         {
-            "cluster_cards": cluster_cards(session, filters),
+            "cluster_cards": cluster_cards(
+                session,
+                filters,
+                get_int_setting(session, "items_per_page", 50),
+            ),
             "filters": filters,
             "languages": session.scalars(select(Article.language).distinct()),
             "sources": session.scalars(select(NewsSource.name).distinct()),
@@ -446,51 +520,39 @@ def fetch_run_detail(run_id: int, request: Request, session: SessionDep):
 def settings(
     request: Request, session: SessionDep, message: str | None = None
 ):
-    setting = session.get(AppSetting, "fetch_interval_minutes")
-    if setting is None:
-        setting = AppSetting(key="fetch_interval_minutes", value="0")
-        session.add(setting)
-        session.commit()
-    value = int(setting.value)
+    values = get_all_settings_with_defaults(session)
+    sections = {}
+    for spec in SETTING_SPECS:
+        sections.setdefault(spec.section, []).append(spec)
     return templates.TemplateResponse(
         request,
         "settings.html",
         {
-            "value": value,
-            "allowed": sorted(ALLOWED_INTERVALS),
             "message": message,
+            "sections": sections,
+            "values": values,
         },
     )
 
 
 @router.post("/settings")
 async def save_settings(request: Request, session: SessionDep):
-    try:
-        body = (await request.body()).decode()
-        form = parse_qs(body)
-        fetch_interval_minutes = int(
-            form.get("fetch_interval_minutes", [""])[0]
-        )
-    except Exception:
-        logger.exception("Settings form parsing failed")
-        return redirect("/settings", "Invalid interval")
-    if fetch_interval_minutes not in ALLOWED_INTERVALS:
-        return redirect("/settings", "Invalid interval")
-    setting = session.get(AppSetting, "fetch_interval_minutes")
-    if setting is None:
-        setting = AppSetting(
-            key="fetch_interval_minutes", value=str(fetch_interval_minutes)
-        )
-        session.add(setting)
-    else:
-        setting.value = str(fetch_interval_minutes)
+    body = (await request.body()).decode()
+    form = {
+        key: values[0]
+        for key, values in parse_qs(body, keep_blank_values=True).items()
+    }
+    values, errors = validate_settings_payload(form)
+    if errors:
+        return redirect("/settings", "; ".join(errors[:3]))
+    for key, value in values.items():
+        set_setting(session, key, value)
     try:
         session.commit()
     except Exception:
         logger.exception("Settings save failed")
         return redirect("/settings", "Settings save failed")
     return redirect("/settings", "Settings saved")
-
 
 @router.get("/clusters/{cluster_id}")
 def cluster_detail(cluster_id: int, request: Request, session: SessionDep):

@@ -18,7 +18,12 @@ from app.db.models import (
     FetchRun,
     StoryCluster,
 )
+from app.services.cluster_service import cluster_articles
 from app.services.normalizer import normalize_article_fields
+from app.services.settings_service import (
+    get_bool_setting,
+    get_int_setting,
+)
 
 
 @dataclass
@@ -104,7 +109,10 @@ def update_feed_status(
 
 
 def fetch_feed(
-    session: Session, client: httpx.Client, feed: FeedSubscription
+    session: Session,
+    client: httpx.Client,
+    feed: FeedSubscription,
+    max_entries: int | None = None,
 ) -> FeedFetchStats:
     result = FeedFetchStats(
         feed_id=feed.id,
@@ -121,10 +129,13 @@ def fetch_feed(
         result.http_status = response.status_code
         response.raise_for_status()
         parsed = feedparser.parse(response.content)
-        result.entries_count = len(parsed.entries)
+        entries = (
+            parsed.entries[:max_entries] if max_entries else parsed.entries
+        )
+        result.entries_count = len(entries)
         if parsed.bozo:
             result.error = f"Feed parse warning: {parsed.bozo_exception}"
-        for entry in parsed.entries:
+        for entry in entries:
             if _save_entry(session, feed, entry):
                 result.new_articles_count += 1
             else:
@@ -200,12 +211,20 @@ def fetch_enabled_feeds(session: Session, *, mode: str = "cli") -> FetchRun:
         run.finished_at = datetime.now(UTC)
         session.commit()
         return run
+    timeout_seconds = get_int_setting(
+        session, "request_timeout_seconds", 30
+    )
+    max_entries = get_int_setting(session, "max_entries_per_feed", 50)
     with httpx.Client(
-        timeout=httpx.Timeout(30.0, connect=10.0, read=20.0),
+        timeout=httpx.Timeout(
+            float(timeout_seconds),
+            connect=min(10.0, float(timeout_seconds)),
+            read=float(timeout_seconds),
+        ),
         follow_redirects=True,
     ) as client:
         for feed in feeds:
-            result = fetch_feed(session, client, feed)
+            result = fetch_feed(session, client, feed, max_entries)
             run = session.get(FetchRun, run.id)
             _save_result(session, run, result)
             if result.status == "success":
@@ -220,6 +239,10 @@ def fetch_enabled_feeds(session: Session, *, mode: str = "cli") -> FetchRun:
         run.successful_feeds, run.failed_feeds, run.total_feeds
     )
     run.finished_at = datetime.now(UTC)
+    if run.total_new_articles and get_bool_setting(
+        session, "auto_cluster_after_fetch", True
+    ):
+        cluster_articles(session)
     run.total_clusters_after = (
         session.scalar(select(func.count(StoryCluster.id))) or 0
     )

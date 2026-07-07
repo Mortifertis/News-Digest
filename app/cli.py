@@ -7,7 +7,7 @@ from pathlib import Path
 from rapidfuzz import fuzz
 from sqlalchemy import select
 
-from app.db.models import AppSetting, FeedSubscription, FetchRun
+from app.db.models import FeedSubscription, FetchRun
 from app.db.session import SessionLocal
 from app.services.cluster_service import cluster_articles
 from app.services.demo_loader import load_demo_articles, reset_article_data
@@ -18,6 +18,7 @@ from app.services.rss_fetcher import (
     test_feed_by_id,
 )
 from app.services.seed_sources import seed, seed_all_candidates
+from app.services.settings_service import get_int_setting, set_setting
 from app.services.source_candidates import (
     discover_feed_urls,
     probe_feed_urls,
@@ -120,22 +121,14 @@ def set_fetch_interval(value: int) -> None:
             "Invalid interval. Allowed: 0, 60, 180, 360, 720, 1440"
         )
     with SessionLocal() as session:
-        setting = session.get(AppSetting, "fetch_interval_minutes")
-        if setting is None:
-            setting = AppSetting(
-                key="fetch_interval_minutes", value=str(value)
-            )
-            session.add(setting)
-        else:
-            setting.value = str(value)
+        set_setting(session, "fetch_interval_minutes", str(value))
         session.commit()
     print(f"fetch_interval_minutes set to {value}")
 
 
 def get_fetch_interval() -> int:
     with SessionLocal() as session:
-        setting = session.get(AppSetting, "fetch_interval_minutes")
-        return int(setting.value) if setting else 0
+        return get_int_setting(session, "fetch_interval_minutes", 0)
 
 
 def run_scheduler() -> None:
@@ -176,7 +169,7 @@ def main() -> None:
         print(f"Clustered {run_cluster()} articles.")
     elif args.command == "stats":
         run_stats()
-    elif args.command == "reset-data":
+    elif args.command in {"reset-data", "clear-articles"}:
         with SessionLocal() as session:
             reset_article_data(session)
         print("Deleted articles, story_clusters, and cluster_articles.")
