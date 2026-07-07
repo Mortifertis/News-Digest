@@ -270,3 +270,80 @@ def test_sources_filters_return_200():
     finally:
         app.dependency_overrides.clear()
         session.close()
+
+
+def test_sources_dropdown_options_and_selected_values():
+    session = session_factory()
+    seed_all_candidates(session)
+
+    def override_session():
+        yield session
+
+    app.dependency_overrides[get_session] = override_session
+    try:
+        client = TestClient(app)
+        response = client.get(
+            "/sources?language=fr&category=world&outlet_type=public_broadcaster"
+        )
+        assert response.status_code == 200
+        assert '<select name="language">' in response.text
+        assert '<option value="fr" selected>fr</option>' in response.text
+        assert '<option value="en"' in response.text
+        assert '<option value="world" selected>world</option>' in response.text
+        assert 'value="public_broadcaster" selected' in response.text
+    finally:
+        app.dependency_overrides.clear()
+        session.close()
+
+
+def test_sources_url_editor_valid_invalid_clear_and_verified_status():
+    session = session_factory()
+    feed = add_feed(session, url=None, enabled=False)
+
+    def override_session():
+        yield session
+
+    app.dependency_overrides[get_session] = override_session
+    try:
+        client = TestClient(app)
+        response = client.post(
+            f"/sources/{feed.id}/url",
+            data={
+                "feed_url": " https://example.test/rss.xml ",
+                "rss_url_status": "verified_official",
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        session.refresh(feed)
+        assert feed.feed_url == "https://example.test/rss.xml"
+        assert feed.rss_url_status == "verified_official"
+        assert feed.fetchable is True
+        assert feed.is_enabled is False
+
+        response = client.post(
+            f"/sources/{feed.id}/url",
+            data={
+                "feed_url": "notaurl",
+                "rss_url_status": "candidate_pattern",
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        session.refresh(feed)
+        assert feed.feed_url == "https://example.test/rss.xml"
+
+        response = client.post(
+            f"/sources/{feed.id}/url",
+            data={"feed_url": "", "rss_url_status": "verified_official"},
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        session.refresh(feed)
+        assert feed.feed_url is None
+        assert feed.rss_url_status == "needs_verification"
+        assert feed.fetchable is False
+        assert feed.is_enabled is False
+    finally:
+        app.dependency_overrides.clear()
+        session.close()

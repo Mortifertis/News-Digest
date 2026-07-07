@@ -60,6 +60,15 @@ class FeedSubscription(Base):
     tags: Mapped[str | None] = mapped_column(Text)
     is_official_url: Mapped[str | None] = mapped_column(String(20))
     url_confidence: Mapped[str | None] = mapped_column(String(20))
+    rss_url_status: Mapped[str] = mapped_column(
+        String(40), default="needs_verification"
+    )
+    rss_url_checked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
+    rss_url_source_note: Mapped[str | None] = mapped_column(Text)
+    terms_note: Mapped[str | None] = mapped_column(Text)
+    fetchable: Mapped[bool] = mapped_column(Boolean, default=False)
     enabled_by_default: Mapped[bool] = mapped_column(Boolean, default=False)
     notes: Mapped[str | None] = mapped_column(Text)
     is_enabled: Mapped[bool] = mapped_column(Boolean, default=True)

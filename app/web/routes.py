@@ -164,7 +164,7 @@ def sources(
     session: SessionDep,
     message: str | None = None,
     enabled: str | None = None,
-    needs_url: bool = False,
+    url_status: str | None = None,
     language: str | None = None,
     country: str | None = None,
     category: str | None = None,
@@ -180,28 +180,38 @@ def sources(
         stmt = stmt.where(FeedSubscription.is_enabled.is_(True))
     if enabled == "false":
         stmt = stmt.where(FeedSubscription.is_enabled.is_(False))
-    if needs_url:
-        stmt = stmt.where(FeedSubscription.feed_url.is_(None))
+    source_joined = False
+    if url_status == "has_url":
+        stmt = stmt.where(FeedSubscription.feed_url.is_not(None))
+    if url_status == "needs_verification":
+        stmt = stmt.where(
+            FeedSubscription.rss_url_status == "needs_verification"
+        )
     if language:
         stmt = stmt.where(FeedSubscription.language == language)
     if country:
-        stmt = stmt.join(FeedSubscription.source).where(
-            NewsSource.country == country
-        )
+        stmt = stmt.join(FeedSubscription.source)
+        source_joined = True
+        stmt = stmt.where(NewsSource.country == country)
     if category:
         stmt = stmt.where(FeedSubscription.category == category)
     if outlet_type:
-        stmt = stmt.join(FeedSubscription.source).where(
-            NewsSource.outlet_type == outlet_type
-        )
+        if not source_joined:
+            stmt = stmt.join(FeedSubscription.source)
+            source_joined = True
+        stmt = stmt.where(NewsSource.outlet_type == outlet_type)
     if reliability_score:
-        stmt = stmt.join(FeedSubscription.source).where(
+        if not source_joined:
+            stmt = stmt.join(FeedSubscription.source)
+            source_joined = True
+        stmt = stmt.where(
             NewsSource.editorial_reliability_score == reliability_score
         )
     if bias_profile:
-        stmt = stmt.join(FeedSubscription.source).where(
-            NewsSource.bias_profile == bias_profile
-        )
+        if not source_joined:
+            stmt = stmt.join(FeedSubscription.source)
+            source_joined = True
+        stmt = stmt.where(NewsSource.bias_profile == bias_profile)
     if last_fetch_status:
         stmt = stmt.where(
             FeedSubscription.last_fetch_status == last_fetch_status
@@ -209,6 +219,33 @@ def sources(
     feeds = (
         session.scalars(stmt.order_by(FeedSubscription.title)).unique().all()
     )
+    filter_options = {
+        "languages": session.scalars(
+            select(FeedSubscription.language).distinct().order_by(
+                FeedSubscription.language
+            )
+        ).all(),
+        "countries": session.scalars(
+            select(NewsSource.country).distinct().order_by(NewsSource.country)
+        ).all(),
+        "categories": session.scalars(
+            select(FeedSubscription.category).distinct().order_by(
+                FeedSubscription.category
+            )
+        ).all(),
+        "outlet_types": session.scalars(
+            select(NewsSource.outlet_type)
+            .where(NewsSource.outlet_type.is_not(None))
+            .distinct()
+            .order_by(NewsSource.outlet_type)
+        ).all(),
+        "bias_profiles": session.scalars(
+            select(NewsSource.bias_profile)
+            .where(NewsSource.bias_profile.is_not(None))
+            .distinct()
+            .order_by(NewsSource.bias_profile)
+        ).all(),
+    }
     return templates.TemplateResponse(
         request,
         "sources.html",
@@ -216,8 +253,48 @@ def sources(
             "feeds": feeds,
             "message": message,
             "filters": dict(request.query_params),
+            "filter_options": filter_options,
         },
     )
+
+
+@router.post("/sources/{feed_id}/url")
+async def save_source_url(
+    request: Request,
+    feed_id: int,
+    session: SessionDep,
+):
+    allowed = {
+        "verified_official",
+        "candidate_pattern",
+        "needs_verification",
+        "api_or_licensed_only",
+        "unavailable",
+    }
+    body = (await request.body()).decode()
+    form = parse_qs(body, keep_blank_values=True)
+    feed_url = form.get("feed_url", [""])[0]
+    rss_url_status = form.get(
+        "rss_url_status", ["candidate_pattern"]
+    )[0]
+    feed = session.get(FeedSubscription, feed_id)
+    if feed is None:
+        raise HTTPException(status_code=404, detail="Feed not found")
+    url = feed_url.strip()
+    if url and not (url.startswith("http://") or url.startswith("https://")):
+        return redirect("/sources", "Invalid feed URL")
+    if rss_url_status not in allowed:
+        rss_url_status = "candidate_pattern" if url else "needs_verification"
+    feed.feed_url = url or None
+    feed.rss_url_status = rss_url_status if url else "needs_verification"
+    feed.fetchable = bool(feed.feed_url) and feed.rss_url_status not in {
+        "api_or_licensed_only",
+        "unavailable",
+    }
+    if not feed.feed_url:
+        feed.is_enabled = False
+    session.commit()
+    return redirect("/sources", "Feed URL saved")
 
 
 @router.post("/sources/{feed_id}/enable")
