@@ -107,6 +107,32 @@ python -m app.cli stats
 Ожидаемая форма результата: статьи загружены, кластеров меньше, чем статей, а
 часть сюжетов объединена в multi-article clusters.
 
+## Operational source catalog
+
+`/sources` shows only operational feed subscriptions with real RSS/Atom
+URLs. The seeded catalog must not contain empty `feed_url` values,
+`example.com` placeholders, third-party RSS generators, or API/licensed-only
+rows masquerading as fetchable feeds.
+
+Media outlets without a configured public RSS/Atom feed are not inserted into
+the operational source table. API-only, licensed, paywalled, or not-yet-verified
+outlets are tracked separately in `docs/source_wishlist.md`.
+
+Useful commands:
+
+```bash
+python -m app.cli seed-all-candidates
+python -m app.cli seed-verified-feeds
+python -m app.cli report-placeholder-sources
+python -m app.cli cleanup-placeholder-sources
+```
+
+Use `seed-all-candidates` to seed the full real-URL catalog, even if a feed is
+temporarily unreachable from the local network. Use `seed-verified-feeds` to
+probe first and seed only feeds that currently return HTTP 200 with parsed
+entries. Use `report-placeholder-sources` to audit an existing local database
+before cleanup.
+
 ## Реальный RSS workflow
 
 Для реального RSS-сценария:

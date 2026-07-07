@@ -18,9 +18,6 @@ from app.main import app
 from app.services.rss_fetcher import (
     fetch_enabled_feeds,
 )
-from app.services.rss_fetcher import (
-    test_feed_by_id as run_test_feed_by_id,
-)
 from app.services.seed_sources import seed_all_candidates
 
 
@@ -176,7 +173,9 @@ def test_dashboard_sources_and_fetch_runs_routes_return_200():
     try:
         client = TestClient(app)
         assert client.get("/").status_code == 200
-        assert client.get("/sources").status_code == 200
+        response = client.get("/sources")
+        assert response.status_code == 200
+        assert "example.com" not in response.text
         assert client.get("/fetch-runs").status_code == 200
     finally:
         app.dependency_overrides.clear()
@@ -237,16 +236,13 @@ def test_source_catalog_metadata_and_empty_url_workflow():
     session = session_factory()
     seed_all_candidates(session)
     feeds = session.scalars(select(FeedSubscription)).all()
-    assert len(feeds) >= 80
+    assert len(feeds) >= 50
     empty_url_feeds = [feed for feed in feeds if not feed.feed_url]
-    assert empty_url_feeds
-    assert all(not feed.is_enabled for feed in empty_url_feeds)
+    assert not empty_url_feeds
+    assert all("example.com" not in feed.feed_url for feed in feeds)
     source = session.scalar(select(NewsSource))
     assert source.outlet_type
     assert source.editorial_reliability_score
-    result = run_test_feed_by_id(session, empty_url_feeds[0].id)
-    assert result.status == "failed"
-    assert "needs URL verification" in result.error
 
 
 def test_sources_filters_return_200():

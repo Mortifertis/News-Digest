@@ -4,10 +4,15 @@ from sqlalchemy.orm import Session
 
 from app.db.models import Base, FeedSubscription
 from app.services.source_candidates import (
+    VERIFIED_FEEDS,
     ProbeResult,
     SourceCandidate,
+    cleanup_placeholder_sources,
     probe_candidate,
+    report_placeholder_sources,
     seed_accessible_sources,
+    seed_all_candidate_sources,
+    validate_candidate_catalog,
 )
 
 RSS_BODY = b"""<?xml version="1.0"?><rss version="2.0"><channel>
@@ -98,3 +103,87 @@ def test_seed_accessible_sources_enables_only_successes(monkeypatch):
     enabled = {feed.feed_url: feed.is_enabled for feed in feeds}
     assert enabled[good.feed_url] is True
     assert enabled[bad.feed_url] is False
+
+
+def test_candidate_catalog_contains_only_real_urls():
+    validate_candidate_catalog(VERIFIED_FEEDS)
+    assert all(candidate.feed_url for candidate in VERIFIED_FEEDS)
+    assert all(
+        "example.com" not in candidate.homepage_url
+        for candidate in VERIFIED_FEEDS
+    )
+    assert all(
+        candidate.feed_url and "example.com" not in candidate.feed_url
+        for candidate in VERIFIED_FEEDS
+    )
+
+
+def test_seed_all_candidates_creates_no_placeholder_rows():
+    with session_factory() as session:
+        seed_all_candidate_sources(session)
+        feeds = session.scalars(select(FeedSubscription)).all()
+        assert feeds
+        assert all(feed.feed_url for feed in feeds)
+        assert all("example.com" not in feed.feed_url for feed in feeds)
+        assert not any(
+            "example.com" in feed.source.homepage_url for feed in feeds
+        )
+        names = {feed.source.name for feed in feeds}
+        assert "Reuters" not in names
+        assert "Associated Press" not in names
+
+
+def test_report_and_cleanup_placeholder_sources():
+    with session_factory() as session:
+        source = __import__(
+            "app.db.models", fromlist=["NewsSource"]
+        ).NewsSource(
+            name="Bad Source",
+            language="en",
+            country="Test",
+            homepage_url="https://www.example.com/bad",
+        )
+        session.add(source)
+        session.flush()
+        empty = FeedSubscription(
+            source_id=source.id,
+            title="Empty URL",
+            feed_url=None,
+            category="test",
+            language="en",
+        )
+        fake = FeedSubscription(
+            source_id=source.id,
+            title="Fake URL",
+            feed_url="https://www.example.com/rss.xml",
+            category="test",
+            language="en",
+        )
+        api = FeedSubscription(
+            source_id=source.id,
+            title="Licensed",
+            feed_url="https://licensed.test/rss.xml",
+            category="test",
+            language="en",
+            rss_url_status="api_or_licensed_only",
+        )
+        session.add_all([empty, fake, api])
+        session.commit()
+
+        report = report_placeholder_sources(session)
+        assert "Empty URL" in report["empty_feed_titles"]
+        assert "Bad Source" in report["example_source_names"]
+        assert "Licensed" in report["api_or_licensed_only_titles"]
+        assert report["total_non_operational_feeds"] == 3
+
+        summary = cleanup_placeholder_sources(session)
+        assert summary["feeds_deleted"] == 3
+        assert summary["sources_deleted"] == 1
+        assert summary["skipped_due_to_existing_articles"] == 0
+        assert not session.scalars(select(FeedSubscription)).all()
+
+
+def test_source_wishlist_mentions_reuters_and_ap():
+    text = __import__("pathlib").Path("docs/source_wishlist.md").read_text()
+    assert "Reuters" in text
+    assert "Associated Press" in text
