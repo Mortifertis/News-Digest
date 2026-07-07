@@ -1,1 +1,29 @@
-{% extends "base.html" %}{% block content %}<h1>Review clusters</h1>{% for cluster in clusters %}<article class="card article"><h2>{{ cluster.title }}</h2><p><span class="badge">{{ cluster.language }}</span> {{ cluster.articles|length }} articles · {{ cluster.articles|map(attribute='article.source.name')|unique|list|length }} unique sources</p><ul>{% for link in cluster.articles %}<li><strong>{{ link.article.title }}</strong><br>{{ link.article.source.name }} · {{ link.match_type }} · {{ "%.1f"|format(link.similarity_score) }}<br><a href="{{ link.article.canonical_url }}">{{ link.article.canonical_url }}</a></li>{% endfor %}</ul></article>{% else %}<p>No clusters to review.</p>{% endfor %}{% endblock %}
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Review clusters</h1>
+{% for cluster in clusters %}
+    <article class="card article">
+        <h2>{{ cluster.title }}</h2>
+        <p>
+            <span class="badge">{{ cluster.language }}</span>
+            {{ cluster.articles|length }} articles ·
+            {{ cluster.articles|map(attribute='article.source.name')|unique|list|length }} unique sources
+        </p>
+        <ul>
+            {% for link in cluster.articles %}
+                <li>
+                    <strong>{{ link.article.title }}</strong><br>
+                    {{ link.article.source.name }} · {{ link.match_type }} ·
+                    {{ "%.1f"|format(link.similarity_score) }}<br>
+                    <a href="{{ link.article.canonical_url }}">
+                        {{ link.article.canonical_url }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </article>
+{% else %}
+    <p>No clusters to review.</p>
+{% endfor %}
+{% endblock %}

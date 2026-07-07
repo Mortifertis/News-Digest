@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "morti-news-digest"
 version = "0.1.0"
@@ -26,3 +30,7 @@ target-version = "py312"
 select = ["E", "F", "I", "UP", "B", "SIM"]
 [tool.pytest.ini_options]
 pythonpath = ["."]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+exclude = ["fixtures*", "tests*"]

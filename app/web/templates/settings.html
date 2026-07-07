@@ -1,1 +1,37 @@
-{% extends "base.html" %}{% block content %}<h1>Settings</h1><form method="post" action="/settings">{% for section, specs in sections.items() %}<section class="card"><h2>{{ section }}</h2>{% for spec in specs %}<label>{{ spec.label }}{% if spec.allowed %}<select name="{{ spec.key }}">{% for option in spec.allowed %}<option value="{{ option }}" {% if values[spec.key] == option %}selected{% endif %}>{{ option if option else 'All' }}</option>{% endfor %}</select>{% else %}<input type="number" name="{{ spec.key }}" value="{{ values[spec.key] }}" min="{{ spec.min_value }}" max="{{ spec.max_value }}">{% endif %}</label><br>{% endfor %}</section>{% endfor %}<button>Save settings</button></form><p class="muted">Article retention 0 means keep forever.</p>{% endblock %}
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Settings</h1>
+<form method="post" action="/settings">
+    {% for section, specs in sections.items() %}
+        <section class="card">
+            <h2>{{ section }}</h2>
+            {% for spec in specs %}
+                <label>
+                    {{ spec.label }}
+                    {% if spec.allowed %}
+                        <select name="{{ spec.key }}">
+                            {% for option in spec.allowed %}
+                                <option value="{{ option }}" {% if values[spec.key] == option %}selected{% endif %}>
+                                    {{ option if option else 'All' }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        <input
+                            type="number"
+                            name="{{ spec.key }}"
+                            value="{{ values[spec.key] }}"
+                            min="{{ spec.min_value }}"
+                            max="{{ spec.max_value }}"
+                        >
+                    {% endif %}
+                </label>
+                <br>
+            {% endfor %}
+        </section>
+    {% endfor %}
+    <button>Save settings</button>
+</form>
+<p class="muted">Article retention 0 means keep forever.</p>
+{% endblock %}

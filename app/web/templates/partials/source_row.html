@@ -1,20 +1,59 @@
 <tr id="source-row-{{ feed.id }}">
-<td><span class="badge {{ 'badge-success' if feed.is_enabled else 'badge-never' }}">{{ "enabled" if feed.is_enabled else "disabled" }}</span></td>
-<td title="{{ feed.source.homepage_url }}">{{ feed.source.display_name or feed.source.name }}</td>
-<td>{{ feed.title }}{% if message %}<br><span class="inline-status">{{ message }}</span>{% endif %}</td>
-<td>{{ feed.language }}</td>
-<td>{{ feed.source.country }}</td>
-<td>{{ feed.category }}</td>
-<td>{{ feed.tags or feed.source.tags or "" }}</td>
-<td>{{ feed.source.outlet_type or "" }}</td>
-<td>{{ feed.source.editorial_reliability_score or "" }}</td>
-<td>{{ feed.source.bias_profile or "" }}</td>
-<td><span class="badge">{{ feed.rss_url_status }}</span>{% if feed.feed_url %}<br><a href="{{ feed.feed_url }}">feed URL</a>{% endif %}</td>
-<td>{{ "yes" if feed.fetchable else "no" }}</td>
-<td title="{{ feed.terms_note or '' }}">{{ (feed.terms_note or '')[:80] }}</td>
-<td title="{{ feed.source.rating_notes or '' }}">{{ (feed.source.rating_notes or '')[:80] }}</td>
-<td>{{ feed.last_fetch_status }}<br>{{ feed.last_successful_fetch_at or "" }}{% if feed.last_entries_count %}<br>{{ feed.last_entries_count }} entries{% endif %}</td>
-<td><pre>{{ feed.last_fetch_error or "" }}</pre></td>
-<td><form method="post" action="/sources/{{ feed.id }}/url" hx-post="/sources/{{ feed.id }}/url" hx-target="#source-row-{{ feed.id }}" hx-swap="outerHTML" hx-include="closest form, .filters"><input name="feed_url" value="{{ feed.feed_url or '' }}" placeholder="https://..."><select name="rss_url_status">{% for status in ['verified_official','candidate_pattern','needs_verification','api_or_licensed_only','unavailable'] %}<option value="{{ status }}" {% if feed.rss_url_status == status %}selected{% endif %}>{{ status }}</option>{% endfor %}</select><button>Save URL</button></form></td>
-<td><form method="post" action="/sources/{{ feed.id }}/{{ 'disable' if feed.is_enabled else 'enable' }}" hx-post="/sources/{{ feed.id }}/{{ 'disable' if feed.is_enabled else 'enable' }}" hx-target="#source-row-{{ feed.id }}" hx-swap="outerHTML" hx-include=".filters"><button>{{ "Disable" if feed.is_enabled else "Enable" }}</button></form><form method="post" action="/sources/{{ feed.id }}/test" hx-post="/sources/{{ feed.id }}/test" hx-target="#source-row-{{ feed.id }}" hx-swap="outerHTML" hx-include=".filters"><button>Test feed now</button></form></td>
+    <td>
+        <span class="badge {{ 'badge-success' if feed.is_enabled else 'badge-never' }}">
+            {{ "enabled" if feed.is_enabled else "disabled" }}
+        </span>
+    </td>
+    <td title="{{ feed.source.homepage_url }}">
+        {{ feed.source.display_name or feed.source.name }}
+    </td>
+    <td>
+        {{ feed.title }}
+        {% if message %}
+            <br><span class="inline-status">{{ message }}</span>
+        {% endif %}
+    </td>
+    <td>{{ feed.language }}</td>
+    <td>{{ feed.source.country }}</td>
+    <td>{{ feed.category }}</td>
+    <td>{{ feed.tags or feed.source.tags or "" }}</td>
+    <td>{{ feed.source.outlet_type or "" }}</td>
+    <td>{{ feed.source.editorial_reliability_score or "" }}</td>
+    <td>{{ feed.source.bias_profile or "" }}</td>
+    <td>
+        <span class="badge">{{ feed.rss_url_status }}</span>
+        {% if feed.feed_url %}
+            <br><a href="{{ feed.feed_url }}">feed URL</a>
+        {% endif %}
+    </td>
+    <td>{{ "yes" if feed.fetchable else "no" }}</td>
+    <td title="{{ feed.terms_note or '' }}">{{ (feed.terms_note or '')[:80] }}</td>
+    <td title="{{ feed.source.rating_notes or '' }}">{{ (feed.source.rating_notes or '')[:80] }}</td>
+    <td>
+        {{ feed.last_fetch_status }}<br>
+        {{ feed.last_successful_fetch_at or "" }}
+        {% if feed.last_entries_count %}
+            <br>{{ feed.last_entries_count }} entries
+        {% endif %}
+    </td>
+    <td><pre>{{ feed.last_fetch_error or "" }}</pre></td>
+    <td>
+        <form method="post" action="/sources/{{ feed.id }}/url" hx-post="/sources/{{ feed.id }}/url" hx-target="#source-row-{{ feed.id }}" hx-swap="outerHTML" hx-include="closest form, .filters">
+            <input name="feed_url" value="{{ feed.feed_url or '' }}" placeholder="https://...">
+            <select name="rss_url_status">
+                {% for status in ['verified_official', 'candidate_pattern', 'needs_verification', 'api_or_licensed_only', 'unavailable'] %}
+                    <option value="{{ status }}" {% if feed.rss_url_status == status %}selected{% endif %}>{{ status }}</option>
+                {% endfor %}
+            </select>
+            <button>Save URL</button>
+        </form>
+    </td>
+    <td>
+        <form method="post" action="/sources/{{ feed.id }}/{{ 'disable' if feed.is_enabled else 'enable' }}" hx-post="/sources/{{ feed.id }}/{{ 'disable' if feed.is_enabled else 'enable' }}" hx-target="#source-row-{{ feed.id }}" hx-swap="outerHTML" hx-include=".filters">
+            <button>{{ "Disable" if feed.is_enabled else "Enable" }}</button>
+        </form>
+        <form method="post" action="/sources/{{ feed.id }}/test" hx-post="/sources/{{ feed.id }}/test" hx-target="#source-row-{{ feed.id }}" hx-swap="outerHTML" hx-include=".filters">
+            <button>Test feed now</button>
+        </form>
+    </td>
 </tr>

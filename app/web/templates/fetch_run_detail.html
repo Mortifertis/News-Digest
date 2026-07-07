@@ -1,1 +1,45 @@
-{% extends "base.html" %}{% block content %}<h1>Fetch run #{{ run.id }}</h1><section class="card"><p>Status: {{ run.status }} · Mode: {{ run.mode }}</p><p>{{ run.started_at }} — {{ run.finished_at }}</p><p>Total feeds: {{ run.total_feeds }} · Successful feeds: {{ run.successful_feeds }} · Failed feeds: {{ run.failed_feeds }}</p><p>Total entries: {{ run.total_entries }} · New articles: {{ run.total_new_articles }} · Skipped articles: {{ run.total_skipped_articles }}</p><p>Clusters before/after: {{ run.total_clusters_before }} → {{ run.total_clusters_after }}</p>{% if run.error_summary %}<pre>{{ run.error_summary }}</pre>{% endif %}</section><h2>Per-feed results</h2><table><thead><tr><th>Feed</th><th>Status</th><th>HTTP</th><th>Entries</th><th>New</th><th>Skipped</th><th>Elapsed ms</th><th>Error</th></tr></thead><tbody>{% for item in run.feed_results|sort(attribute='status') %}<tr><td>{{ item.feed_title }}</td><td>{{ item.status }}</td><td>{{ item.http_status or "" }}</td><td>{{ item.entries_count }}</td><td>{{ item.new_articles_count }}</td><td>{{ item.skipped_articles_count }}</td><td>{{ item.elapsed_ms }}</td><td><pre>{{ item.error or "" }}</pre></td></tr>{% endfor %}</tbody></table>{% endblock %}
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Fetch run #{{ run.id }}</h1>
+<section class="card">
+    <p>Status: {{ run.status }} · Mode: {{ run.mode }}</p>
+    <p>{{ run.started_at }} — {{ run.finished_at }}</p>
+    <p>Total feeds: {{ run.total_feeds }} · Successful feeds: {{ run.successful_feeds }} · Failed feeds: {{ run.failed_feeds }}</p>
+    <p>Total entries: {{ run.total_entries }} · New articles: {{ run.total_new_articles }} · Skipped articles: {{ run.total_skipped_articles }}</p>
+    <p>Clusters before/after: {{ run.total_clusters_before }} → {{ run.total_clusters_after }}</p>
+    {% if run.error_summary %}
+        <pre>{{ run.error_summary }}</pre>
+    {% endif %}
+</section>
+
+<h2>Per-feed results</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Feed</th>
+            <th>Status</th>
+            <th>HTTP</th>
+            <th>Entries</th>
+            <th>New</th>
+            <th>Skipped</th>
+            <th>Elapsed ms</th>
+            <th>Error</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in run.feed_results|sort(attribute='status') %}
+            <tr>
+                <td>{{ item.feed_title }}</td>
+                <td>{{ item.status }}</td>
+                <td>{{ item.http_status or "" }}</td>
+                <td>{{ item.entries_count }}</td>
+                <td>{{ item.new_articles_count }}</td>
+                <td>{{ item.skipped_articles_count }}</td>
+                <td>{{ item.elapsed_ms }}</td>
+                <td><pre>{{ item.error or "" }}</pre></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

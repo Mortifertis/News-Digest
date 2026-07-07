@@ -903,6 +903,7 @@ def probe_feed_urls(session: Session) -> dict[str, int]:
     session.commit()
     return summary
 
+
 def seed_all_candidate_sources(session: Session) -> int:
     count = 0
     for candidate in CANDIDATES:

@@ -1,3 +1,31 @@
 <div id="sources-table">
-<table><thead><tr><th>Enabled</th><th>Source</th><th>Feed</th><th>Language</th><th>Country</th><th>Category</th><th>Tags</th><th>Outlet type</th><th>Reliability</th><th>Bias</th><th>RSS status</th><th>Fetchable</th><th>Terms</th><th>Rating notes</th><th>Last fetch</th><th>Error</th><th>URL editor</th><th>Actions</th></tr></thead><tbody>{% for feed in feeds %}{% include "partials/source_row.html" %}{% endfor %}</tbody></table>
+    <table>
+        <thead>
+            <tr>
+                <th>Enabled</th>
+                <th>Source</th>
+                <th>Feed</th>
+                <th>Language</th>
+                <th>Country</th>
+                <th>Category</th>
+                <th>Tags</th>
+                <th>Outlet type</th>
+                <th>Reliability</th>
+                <th>Bias</th>
+                <th>RSS status</th>
+                <th>Fetchable</th>
+                <th>Terms</th>
+                <th>Rating notes</th>
+                <th>Last fetch</th>
+                <th>Error</th>
+                <th>URL editor</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for feed in feeds %}
+                {% include "partials/source_row.html" %}
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
