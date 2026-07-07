@@ -1,8 +1,47 @@
-{% extends "base.html" %}{% block content %}
+{% extends "base.html" %}
+
+{% block content %}
 <h1>Fetch runs</h1>
-<form method="post" action="/fetch/run"><button>Run fetch now</button></form>
+<form method="post" action="/fetch/run">
+    <button>Run fetch now</button>
+</form>
+
 {% if not runs %}
-<section class="card"><h2>No fetch runs yet</h2><p>Run a fetch from /sources or use python -m app.cli fetch</p><form method="post" action="/fetch/run"><button>Run fetch now</button></form></section>
+    <section class="card">
+        <h2>No fetch runs yet</h2>
+        <p>Run a fetch from /sources or use python -m app.cli fetch</p>
+        <form method="post" action="/fetch/run">
+            <button>Run fetch now</button>
+        </form>
+    </section>
 {% else %}
-<table><thead><tr><th>ID</th><th>Time</th><th>Mode</th><th>Status</th><th>Success/failed</th><th>New</th><th>Skipped</th><th>Details</th></tr></thead><tbody>{% for run in runs %}<tr><td>{{ run.id }}</td><td>{{ run.started_at }}</td><td>{{ run.mode }}</td><td>{{ run.status }}</td><td>{{ run.successful_feeds }}/{{ run.failed_feeds }}</td><td>{{ run.total_new_articles }}</td><td>{{ run.total_skipped_articles }}</td><td><a href="/fetch-runs/{{ run.id }}">open</a></td></tr>{% endfor %}</tbody></table>
-{% endif %}{% endblock %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Time</th>
+                <th>Mode</th>
+                <th>Status</th>
+                <th>Success/failed</th>
+                <th>New</th>
+                <th>Skipped</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for run in runs %}
+                <tr>
+                    <td>{{ run.id }}</td>
+                    <td>{{ run.started_at }}</td>
+                    <td>{{ run.mode }}</td>
+                    <td>{{ run.status }}</td>
+                    <td>{{ run.successful_feeds }}/{{ run.failed_feeds }}</td>
+                    <td>{{ run.total_new_articles }}</td>
+                    <td>{{ run.total_skipped_articles }}</td>
+                    <td><a href="/fetch-runs/{{ run.id }}">open</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}

@@ -211,9 +211,7 @@ def fetch_enabled_feeds(session: Session, *, mode: str = "cli") -> FetchRun:
         run.finished_at = datetime.now(UTC)
         session.commit()
         return run
-    timeout_seconds = get_int_setting(
-        session, "request_timeout_seconds", 30
-    )
+    timeout_seconds = get_int_setting(session, "request_timeout_seconds", 30)
     max_entries = get_int_setting(session, "max_entries_per_feed", 50)
     with httpx.Client(
         timeout=httpx.Timeout(

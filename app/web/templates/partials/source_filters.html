@@ -1,15 +1,68 @@
-<form class="card filters" method="get" action="/sources"
-      hx-get="/sources/table" hx-target="#sources-table"
-      hx-push-url="/sources" hx-include="this">
-    <select name="enabled"><option value="">All enabled states</option><option value="enabled" {% if filters.enabled == 'enabled' %}selected{% endif %}>enabled</option><option value="disabled" {% if filters.enabled == 'disabled' %}selected{% endif %}>disabled</option></select>
-    <select name="url_status"><option value="">All URL states</option><option value="has_url" {% if filters.url_status == 'has_url' %}selected{% endif %}>has URL</option><option value="needs_url_verification" {% if filters.url_status in ['needs_url_verification', 'needs_verification'] %}selected{% endif %}>needs URL verification</option><option value="verified_official" {% if filters.url_status == 'verified_official' %}selected{% endif %}>verified official</option><option value="candidate_pattern" {% if filters.url_status == 'candidate_pattern' %}selected{% endif %}>candidate pattern</option><option value="api_or_licensed_only" {% if filters.url_status == 'api_or_licensed_only' %}selected{% endif %}>API/licensed only</option><option value="unavailable" {% if filters.url_status == 'unavailable' %}selected{% endif %}>unavailable</option></select>
-    <select name="language"><option value="">All languages</option>{% for item in filter_options.languages %}<option value="{{ item }}" {% if filters.language == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select>
-    <select name="country"><option value="">All countries</option>{% for item in filter_options.countries %}<option value="{{ item }}" {% if filters.country == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select>
-    <select name="category"><option value="">All categories</option>{% for item in filter_options.categories %}<option value="{{ item }}" {% if filters.category == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select>
-    <select name="outlet_type"><option value="">All outlet types</option>{% for item in filter_options.outlet_types %}<option value="{{ item }}" {% if filters.outlet_type == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select>
-    <select name="reliability_score"><option value="">All reliability scores</option>{% for item in [5,4,3,2,1] %}<option value="{{ item }}" {% if filters.reliability_score == item|string %}selected{% endif %}>{{ item }}</option>{% endfor %}</select>
-    <select name="bias_profile"><option value="">All bias profiles</option>{% for item in filter_options.bias_profiles %}<option value="{{ item }}" {% if filters.bias_profile == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select>
-    <select name="last_fetch_status"><option value="">All fetch statuses</option>{% for item in ['success','failed','never'] %}<option value="{{ item }}" {% if filters.last_fetch_status == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select>
+<form
+    class="card filters"
+    method="get"
+    action="/sources"
+    hx-get="/sources/table"
+    hx-target="#sources-table"
+    hx-push-url="/sources"
+    hx-include="this"
+>
+    <select name="enabled">
+        <option value="">All enabled states</option>
+        <option value="enabled" {% if filters.enabled == 'enabled' %}selected{% endif %}>enabled</option>
+        <option value="disabled" {% if filters.enabled == 'disabled' %}selected{% endif %}>disabled</option>
+    </select>
+    <select name="url_status">
+        <option value="">All URL states</option>
+        <option value="has_url" {% if filters.url_status == 'has_url' %}selected{% endif %}>has URL</option>
+        <option value="needs_url_verification" {% if filters.url_status in ['needs_url_verification', 'needs_verification'] %}selected{% endif %}>needs URL verification</option>
+        <option value="verified_official" {% if filters.url_status == 'verified_official' %}selected{% endif %}>verified official</option>
+        <option value="candidate_pattern" {% if filters.url_status == 'candidate_pattern' %}selected{% endif %}>candidate pattern</option>
+        <option value="api_or_licensed_only" {% if filters.url_status == 'api_or_licensed_only' %}selected{% endif %}>API/licensed only</option>
+        <option value="unavailable" {% if filters.url_status == 'unavailable' %}selected{% endif %}>unavailable</option>
+    </select>
+    <select name="language">
+        <option value="">All languages</option>
+        {% for item in filter_options.languages %}
+            <option value="{{ item }}" {% if filters.language == item %}selected{% endif %}>{{ item }}</option>
+        {% endfor %}
+    </select>
+    <select name="country">
+        <option value="">All countries</option>
+        {% for item in filter_options.countries %}
+            <option value="{{ item }}" {% if filters.country == item %}selected{% endif %}>{{ item }}</option>
+        {% endfor %}
+    </select>
+    <select name="category">
+        <option value="">All categories</option>
+        {% for item in filter_options.categories %}
+            <option value="{{ item }}" {% if filters.category == item %}selected{% endif %}>{{ item }}</option>
+        {% endfor %}
+    </select>
+    <select name="outlet_type">
+        <option value="">All outlet types</option>
+        {% for item in filter_options.outlet_types %}
+            <option value="{{ item }}" {% if filters.outlet_type == item %}selected{% endif %}>{{ item }}</option>
+        {% endfor %}
+    </select>
+    <select name="reliability_score">
+        <option value="">All reliability scores</option>
+        {% for item in [5, 4, 3, 2, 1] %}
+            <option value="{{ item }}" {% if filters.reliability_score == item|string %}selected{% endif %}>{{ item }}</option>
+        {% endfor %}
+    </select>
+    <select name="bias_profile">
+        <option value="">All bias profiles</option>
+        {% for item in filter_options.bias_profiles %}
+            <option value="{{ item }}" {% if filters.bias_profile == item %}selected{% endif %}>{{ item }}</option>
+        {% endfor %}
+    </select>
+    <select name="last_fetch_status">
+        <option value="">All fetch statuses</option>
+        {% for item in ['success', 'failed', 'never'] %}
+            <option value="{{ item }}" {% if filters.last_fetch_status == item %}selected{% endif %}>{{ item }}</option>
+        {% endfor %}
+    </select>
     <button>Filter</button>
     <a class="button-link" href="/sources">Reset filters</a>
 </form>

@@ -71,9 +71,7 @@ def _cluster_articles(
 def find_fuzzy_cluster(
     session: Session, article: Article
 ) -> tuple[StoryCluster, float] | None:
-    window_hours = get_int_setting(
-        session, "fuzzy_candidate_window_hours", 72
-    )
+    window_hours = get_int_setting(session, "fuzzy_candidate_window_hours", 72)
     since = datetime.now(UTC) - timedelta(hours=window_hours)
     best_cluster = None
     best_score = 0.0
@@ -103,7 +101,8 @@ def find_fuzzy_cluster(
             best_score = cluster_best_score
 
     threshold = get_int_setting(
-        session, f"fuzzy_threshold_{article.language}",
+        session,
+        f"fuzzy_threshold_{article.language}",
         get_int_setting(session, "fuzzy_threshold_default", 82),
     )
     if best_cluster is None or best_score < threshold:

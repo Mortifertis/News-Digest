@@ -1,1 +1,36 @@
-{% extends "base.html" %}{% block content %}<h1>{{ cluster.title }}</h1><section class="card"><h2>Lead article</h2><p>{{ cluster.lead_article.title }}</p><a href="{{ cluster.lead_article.canonical_url }}">Open original</a></section><h2>Related articles</h2><table><thead><tr><th>Title</th><th>Source</th><th>Score</th><th>Match</th><th>URL</th></tr></thead><tbody>{% for item in cluster.articles %}<tr><td>{{ item.article.title }}</td><td>{{ item.article.source.name }}</td><td>{{ "%.1f"|format(item.similarity_score) }}</td><td>{{ item.match_type }}</td><td><a href="{{ item.article.canonical_url }}">Original</a></td></tr>{% endfor %}</tbody></table>{% endblock %}
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{ cluster.title }}</h1>
+<section class="card">
+    <h2>Lead article</h2>
+    <p>{{ cluster.lead_article.title }}</p>
+    <a href="{{ cluster.lead_article.canonical_url }}">Open original</a>
+</section>
+
+<h2>Related articles</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Source</th>
+            <th>Score</th>
+            <th>Match</th>
+            <th>URL</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in cluster.articles %}
+            <tr>
+                <td>{{ item.article.title }}</td>
+                <td>{{ item.article.source.name }}</td>
+                <td>{{ "%.1f"|format(item.similarity_score) }}</td>
+                <td>{{ item.match_type }}</td>
+                <td>
+                    <a href="{{ item.article.canonical_url }}">Original</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
