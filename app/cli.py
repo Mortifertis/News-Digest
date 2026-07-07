@@ -18,6 +18,11 @@ from app.services.rss_fetcher import (
     test_feed_by_id,
 )
 from app.services.seed_sources import seed, seed_all_candidates
+from app.services.source_candidates import (
+    discover_feed_urls,
+    probe_feed_urls,
+    save_discovered_feed_url,
+)
 from app.services.stats_service import collect_stats
 
 ALLOWED_INTERVALS = {0, 60, 180, 360, 720, 1440}
@@ -156,6 +161,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(prog="morti-news-digest")
     parser.add_argument("command")
     parser.add_argument("value", nargs="?")
+    parser.add_argument("--feed-id", type=int)
     parser.add_argument(
         "--no-reset",
         action="store_true",
@@ -193,6 +199,22 @@ def main() -> None:
         with SessionLocal() as session:
             count = seed(session)
         print(f"Seeded accessible source defaults ({count} new).")
+    elif args.command == "discover-feed-url":
+        urls = discover_feed_urls(args.value or "")
+        for url in urls:
+            print(url)
+        if args.feed_id and urls:
+            with SessionLocal() as session:
+                save_discovered_feed_url(session, args.feed_id, urls[0])
+            print(f"Saved first discovered URL to feed {args.feed_id}.")
+    elif args.command == "probe-feed-urls":
+        with SessionLocal() as session:
+            summary = probe_feed_urls(session)
+        print(f"checked: {summary['checked']}")
+        print(f"success: {summary['success']}")
+        print(f"failed: {summary['failed']}")
+        print(f"needs URL: {summary['needs_url']}")
+        print(f"api/licensed only: {summary['api_or_licensed_only']}")
     elif args.command == "enable-feed":
         with SessionLocal() as session:
             feed = _feed_by_title(session, args.value or "")

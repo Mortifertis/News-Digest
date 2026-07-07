@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from html.parser import HTMLParser
 from time import perf_counter
+from urllib.parse import urljoin, urlparse
 
 import feedparser
 import httpx
@@ -45,6 +48,11 @@ class SourceCandidate:
     feed_tags: list[str] = field(default_factory=list)
     is_official_url: str = "unknown"
     url_confidence: str = "low"
+    rss_url_status: str = "needs_verification"
+    rss_url_checked_at: datetime | None = None
+    rss_url_source_note: str | None = None
+    terms_note: str | None = None
+    fetchable: bool = False
 
 
 @dataclass
@@ -70,11 +78,22 @@ def _feed(
     official: str = "true",
     confidence: str = "high",
     notes: str = NEEDS_VERIFICATION,
+    status: str | None = None,
+    terms_note: str | None = None,
 ) -> dict:
     if not url:
         official = "unknown"
         confidence = "low"
         notes = FIND_RSS
+    if status is None:
+        if url and confidence == "high":
+            status = "verified_official"
+        else:
+            status = "needs_verification"
+    fetchable = bool(url) and status not in {
+        "api_or_licensed_only",
+        "unavailable",
+    }
     return {
         "feed_title": title,
         "feed_url": url,
@@ -83,6 +102,10 @@ def _feed(
         "is_official_url": official,
         "url_confidence": confidence,
         "notes": notes,
+        "rss_url_status": status,
+        "rss_url_source_note": notes,
+        "terms_note": terms_note,
+        "fetchable": fetchable,
     }
 
 
@@ -157,6 +180,7 @@ def _add_catalog() -> None:
                         "Reuters content often requires licensed access; "
                         "use only if official public feed/API is configured."
                     ),
+                    status="api_or_licensed_only",
                 )
             ],
             "private",
@@ -178,6 +202,7 @@ def _add_catalog() -> None:
                     "general",
                     ["world"],
                     notes="AP content/API may require licensed access.",
+                    status="api_or_licensed_only",
                 )
             ],
             "nonprofit",
@@ -754,9 +779,129 @@ def upsert_candidate(session: Session, c: SourceCandidate) -> bool:
     feed.url_confidence = c.url_confidence
     feed.enabled_by_default = c.enabled_by_default
     feed.notes = c.notes
+    feed.rss_url_status = c.rss_url_status
+    feed.rss_url_checked_at = c.rss_url_checked_at
+    feed.rss_url_source_note = c.rss_url_source_note
+    feed.terms_note = c.terms_note
+    feed.fetchable = c.fetchable and bool(c.feed_url)
     feed.is_enabled = c.enabled_by_default and bool(c.feed_url)
     return created
 
+
+class FeedLinkParser(HTMLParser):
+    def __init__(self, base_url: str) -> None:
+        super().__init__()
+        self.base_url = base_url
+        self.links: list[str] = []
+
+    def handle_starttag(
+        self, tag: str, attrs: list[tuple[str, str | None]]
+    ) -> None:
+        if tag.lower() != "link":
+            return
+        attr = {k.lower(): v for k, v in attrs if v is not None}
+        rel = attr.get("rel", "").lower()
+        typ = attr.get("type", "").lower()
+        href = attr.get("href")
+        if (
+            href
+            and "alternate" in rel
+            and typ in {"application/rss+xml", "application/atom+xml"}
+        ):
+            self.links.append(urljoin(self.base_url, href))
+
+
+def discover_feed_urls_from_html(html: str, base_url: str) -> list[str]:
+    parser = FeedLinkParser(base_url)
+    parser.feed(html)
+    return parser.links
+
+
+def discover_feed_urls(url: str) -> list[str]:
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        return []
+    try:
+        response = httpx.get(url, timeout=TOTAL_TIMEOUT, follow_redirects=True)
+        response.raise_for_status()
+    except httpx.HTTPError:
+        return []
+    return discover_feed_urls_from_html(response.text, str(response.url))
+
+
+def save_discovered_feed_url(
+    session: Session, feed_id: int, feed_url: str
+) -> None:
+    feed = session.get(FeedSubscription, feed_id)
+    if feed is None:
+        raise ValueError(f"Feed not found: {feed_id}")
+    feed.feed_url = feed_url.strip()
+    feed.rss_url_status = "candidate_pattern"
+    feed.rss_url_source_note = "Saved from RSS autodiscovery."
+    feed.fetchable = bool(feed.feed_url)
+    session.commit()
+
+
+def probe_feed_urls(session: Session) -> dict[str, int]:
+    feeds = session.scalars(select(FeedSubscription)).all()
+    summary = {
+        "checked": 0,
+        "success": 0,
+        "failed": 0,
+        "needs_url": 0,
+        "api_or_licensed_only": 0,
+    }
+    for feed in feeds:
+        if feed.rss_url_status == "api_or_licensed_only":
+            summary["api_or_licensed_only"] += 1
+            feed.fetchable = False
+            continue
+        if not feed.feed_url:
+            summary["needs_url"] += 1
+            feed.fetchable = False
+            if feed.rss_url_status not in {
+                "unavailable",
+                "api_or_licensed_only",
+            }:
+                feed.rss_url_status = "needs_verification"
+            continue
+        summary["checked"] += 1
+        feed.rss_url_checked_at = datetime.now(UTC)
+        with httpx.Client(
+            timeout=httpx.Timeout(
+                TOTAL_TIMEOUT, connect=CONNECT_TIMEOUT, read=READ_TIMEOUT
+            ),
+            follow_redirects=True,
+        ) as client:
+            result = probe_candidate(
+                SourceCandidate(
+                    source_name=feed.source.name,
+                    language=feed.language,
+                    country=feed.source.country,
+                    homepage_url=feed.source.homepage_url,
+                    feed_title=feed.title,
+                    feed_url=feed.feed_url,
+                    category=feed.category,
+                ),
+                client,
+            )
+        feed.last_fetch_status = result.status
+        feed.last_http_status = result.http_status
+        feed.last_entries_count = result.entries_count
+        feed.last_fetch_error = result.error
+        if result.is_success:
+            summary["success"] += 1
+            if feed.rss_url_status in {
+                "candidate_pattern",
+                "verified_official",
+            }:
+                feed.rss_url_status = "verified_official"
+            feed.fetchable = True
+        else:
+            summary["failed"] += 1
+            feed.fetchable = False
+    session.commit()
+    return summary
 
 def seed_all_candidate_sources(session: Session) -> int:
     count = 0

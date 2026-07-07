@@ -446,3 +446,66 @@ official public feed/API is configured.
   empty-URL candidates need manual verification.
 - Fetching depends on the operator's current network and publisher access
   rules.
+
+## Working with source filters
+
+The `/sources` page uses dropdown filters instead of free-text filter boxes.
+Dropdown values are generated from values that already exist in SQLite, so the
+operator does not need to remember codes such as `en`, `fr`, `center`, or
+`public_broadcaster`.
+
+Available source filters include enabled status, RSS URL status, language,
+country, category, outlet type, editorial reliability score, bias profile, and
+last fetch status. Select any combination and submit the form; selected values
+remain selected after the page reloads. Use **Reset filters** to return to the
+unfiltered `/sources` page.
+
+Common examples:
+
+- choose `language=en` or `language=fr` from the language dropdown;
+- choose categories such as `world`, `business`, or `technology`;
+- choose reliability `5` to review the highest-scored source candidates;
+- choose **needs URL verification** to find feeds that still need an official
+  RSS URL.
+
+## RSS URL verification workflow
+
+Run `python -m app.cli seed-all-candidates` to load the source catalog. Some
+feeds ship with high-confidence or verified official RSS URLs; others remain
+empty and are marked as `needs_verification` until an operator finds an official
+feed URL.
+
+Use RSS autodiscovery to inspect an outlet or section page without scraping full
+article text:
+
+```bash
+python -m app.cli discover-feed-url "https://www.theguardian.com/world"
+python -m app.cli discover-feed-url "https://www.lemonde.fr/international/"
+python -m app.cli discover-feed-url "https://www.france24.com/fr/"
+```
+
+If a discovered URL should be attached to a feed, pass `--feed-id N` to save the
+first discovered URL as a candidate pattern:
+
+```bash
+python -m app.cli discover-feed-url "https://example.com/news" --feed-id 12
+```
+
+Operators can also edit URLs directly on `/sources`: update the inline feed URL
+field, choose an RSS URL status, and click **Save URL**. Saving a URL does not
+auto-enable the feed; use **Test feed now** and then enable it manually.
+
+Run `python -m app.cli probe-feed-urls` to check all feeds with non-empty URLs.
+The probe records `rss_url_checked_at`, updates last probe/fetch status fields,
+marks successful candidate or official URLs as `verified_official`, and leaves
+failed URLs in place for later review.
+
+RSS URL statuses mean:
+
+- `verified_official` — an official URL was found or a candidate URL probed
+  successfully;
+- `candidate_pattern` — the URL follows an apparent outlet pattern but still
+  needs probing or human confirmation;
+- `needs_verification` — the source is useful but no URL is known yet;
+- `api_or_licensed_only` — the source likely requires API or licensed access;
+- `unavailable` — no suitable RSS feed is currently available for the POC.
