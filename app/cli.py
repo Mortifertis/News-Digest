@@ -20,9 +20,12 @@ from app.services.rss_fetcher import (
 from app.services.seed_sources import seed, seed_all_candidates
 from app.services.settings_service import get_int_setting, set_setting
 from app.services.source_candidates import (
+    cleanup_placeholder_sources,
     discover_feed_urls,
     probe_feed_urls,
+    report_placeholder_sources,
     save_discovered_feed_url,
+    seed_verified_feeds,
 )
 from app.services.stats_service import collect_stats
 
@@ -155,6 +158,7 @@ def main() -> None:
     parser.add_argument("command")
     parser.add_argument("value", nargs="?")
     parser.add_argument("--feed-id", type=int)
+    parser.add_argument("--force", action="store_true")
     parser.add_argument(
         "--no-reset",
         action="store_true",
@@ -188,6 +192,42 @@ def main() -> None:
         with SessionLocal() as session:
             count = seed_all_candidates(session)
         print(f"Seeded all candidate feeds ({count} new).")
+    elif args.command == "seed-verified-feeds":
+        with SessionLocal() as session:
+            results = seed_verified_feeds(session)
+        failed = [result for result in results if not result.is_success]
+        print(f"checked: {len(results)}")
+        print(f"seeded: {len(results) - len(failed)}")
+        print(f"failed: {len(failed)}")
+        if failed:
+            print("failed list:")
+            for result in failed:
+                print(f"- {result.candidate.feed_title}: {result.error}")
+    elif args.command == "report-placeholder-sources":
+        with SessionLocal() as session:
+            summary = report_placeholder_sources(session)
+        print("feeds with empty feed_url:")
+        for title in summary["empty_feed_titles"]:
+            print(f"- {title}")
+        print("sources with example.com homepage:")
+        for name in summary["example_source_names"]:
+            print(f"- {name}")
+        print("feed titles with rss_url_status api_or_licensed_only:")
+        for title in summary["api_or_licensed_only_titles"]:
+            print(f"- {title}")
+        print(
+            "total non-operational feeds: "
+            f"{summary['total_non_operational_feeds']}"
+        )
+    elif args.command == "cleanup-placeholder-sources":
+        with SessionLocal() as session:
+            summary = cleanup_placeholder_sources(session, force=args.force)
+        print(f"feeds_deleted: {summary['feeds_deleted']}")
+        print(f"sources_deleted: {summary['sources_deleted']}")
+        print(
+            "skipped_due_to_existing_articles: "
+            f"{summary['skipped_due_to_existing_articles']}"
+        )
     elif args.command == "seed-accessible-sources":
         with SessionLocal() as session:
             count = seed(session)
