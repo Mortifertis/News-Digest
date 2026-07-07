@@ -30,3 +30,7 @@ target-version = "py312"
 select = ["E", "F", "I", "UP", "B", "SIM"]
 [tool.pytest.ini_options]
 pythonpath = ["."]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+exclude = ["fixtures*", "tests*"]
