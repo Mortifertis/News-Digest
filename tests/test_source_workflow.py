@@ -80,7 +80,7 @@ def add_feed(session, title="Feed", url="https://ok.test/rss", enabled=True):
     feed = FeedSubscription(
         source_id=source.id,
         title=title,
-        feed_url=url,
+        feed_url=url or None,
         category="test",
         language="en",
         is_enabled=enabled,
@@ -437,3 +437,202 @@ def test_scheduler_reads_fetch_interval_setting():
         session.add(AppSetting(key="fetch_interval_minutes", value="60"))
         session.commit()
         assert get_int_setting(session, "fetch_interval_minutes", 0) == 60
+
+
+def add_custom_feed(
+    session,
+    title="Feed",
+    url=None,
+    enabled=False,
+    language="en",
+    category="world",
+    fetchable=True,
+    status="candidate_pattern",
+    reliability=5,
+):
+    if url is None and fetchable:
+        url = f"https://ok.test/{title.replace(' ', '-')}/rss"
+    source = NewsSource(
+        name=f"Custom {title}",
+        language=language,
+        country="Test",
+        homepage_url="https://example.test",
+        editorial_reliability_score=reliability,
+    )
+    session.add(source)
+    session.flush()
+    feed = FeedSubscription(
+        source_id=source.id,
+        title=title,
+        feed_url=url or None,
+        category=category,
+        language=language,
+        rss_url_status=status,
+        fetchable=fetchable,
+        is_enabled=enabled,
+    )
+    session.add(feed)
+    session.commit()
+    return feed
+
+
+def client_for_session(session):
+    def override_session():
+        yield session
+
+    app.dependency_overrides[get_session] = override_session
+    return TestClient(app)
+
+
+def test_enable_with_filters_preserves_query_params_non_htmx():
+    session = session_factory()
+    feed = add_custom_feed(session, language="fr", enabled=False)
+    try:
+        client = client_for_session(session)
+        response = client.post(
+            f"/sources/{feed.id}/enable?language=fr&category=world",
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        assert "language=fr" in response.headers["location"]
+        assert "category=world" in response.headers["location"]
+    finally:
+        app.dependency_overrides.clear()
+        session.close()
+
+
+def test_htmx_enable_and_disable_return_row_partial():
+    session = session_factory()
+    feed = add_custom_feed(session, enabled=False)
+    try:
+        client = client_for_session(session)
+        response = client.post(
+            f"/sources/{feed.id}/enable",
+            headers={"HX-Request": "true"},
+        )
+        assert response.status_code == 200
+        assert f'id="source-row-{feed.id}"' in response.text
+        assert "<html" not in response.text
+        response = client.post(
+            f"/sources/{feed.id}/disable",
+            headers={"HX-Request": "true"},
+        )
+        assert response.status_code == 200
+        assert f'id="source-row-{feed.id}"' in response.text
+        assert "disabled" in response.text
+    finally:
+        app.dependency_overrides.clear()
+        session.close()
+
+
+def test_htmx_test_empty_url_returns_controlled_row_message():
+    session = session_factory()
+    feed = add_custom_feed(session, url=None, fetchable=False)
+    try:
+        client = client_for_session(session)
+        response = client.post(
+            f"/sources/{feed.id}/test",
+            headers={"HX-Request": "true"},
+        )
+        assert response.status_code == 200
+        assert "Feed test failed" in response.text
+        assert "needs URL verification" in response.text
+    finally:
+        app.dependency_overrides.clear()
+        session.close()
+
+
+def test_sources_table_and_summary_filtered_counts():
+    session = session_factory()
+    add_custom_feed(session, title="FR enabled", language="fr", enabled=True)
+    add_custom_feed(session, title="EN disabled", language="en", enabled=False)
+    try:
+        client = client_for_session(session)
+        response = client.get("/sources/table?language=fr")
+        assert response.status_code == 200
+        assert "FR enabled" in response.text
+        assert "EN disabled" not in response.text
+        response = client.get("/sources/summary?language=fr")
+        assert response.status_code == 200
+        assert "visible feeds" in response.text
+    finally:
+        app.dependency_overrides.clear()
+        session.close()
+
+
+def test_bulk_enable_only_filtered_and_skips_empty_url():
+    session = session_factory()
+    fr = add_custom_feed(session, title="FR", language="fr", enabled=False)
+    empty = add_custom_feed(
+        session,
+        title="FR empty",
+        url=None,
+        language="fr",
+        enabled=False,
+        fetchable=False,
+    )
+    en = add_custom_feed(session, title="EN", language="en", enabled=False)
+    try:
+        client = client_for_session(session)
+        response = client.post(
+            "/sources/bulk-enable?language=fr", follow_redirects=False
+        )
+        assert response.status_code == 303
+        session.refresh(fr)
+        session.refresh(empty)
+        session.refresh(en)
+        assert fr.is_enabled is True
+        assert empty.is_enabled is False
+        assert en.is_enabled is False
+    finally:
+        app.dependency_overrides.clear()
+        session.close()
+
+
+def test_bulk_disable_only_filtered():
+    session = session_factory()
+    fr = add_custom_feed(session, title="FR", language="fr", enabled=True)
+    en = add_custom_feed(session, title="EN", language="en", enabled=True)
+    try:
+        client = client_for_session(session)
+        response = client.post(
+            "/sources/bulk-disable?language=fr", follow_redirects=False
+        )
+        assert response.status_code == 303
+        session.refresh(fr)
+        session.refresh(en)
+        assert fr.is_enabled is False
+        assert en.is_enabled is True
+    finally:
+        app.dependency_overrides.clear()
+        session.close()
+
+
+def test_bulk_test_handles_failures_without_crashing(monkeypatch):
+    monkeypatch.setattr("app.web.routes.httpx.Client", FakeClient)
+    session = session_factory()
+    feed = add_custom_feed(session, title="Fail", url="https://fail.test/rss")
+    try:
+        client = client_for_session(session)
+        response = client.post(
+            "/sources/bulk-test?language=en", follow_redirects=False
+        )
+        assert response.status_code == 303
+        session.refresh(feed)
+        assert feed.last_fetch_status == "failed"
+    finally:
+        app.dependency_overrides.clear()
+        session.close()
+
+
+def test_filters_service_matches_sources_table_subset():
+    from app.services.source_filters import get_filtered_feeds
+
+    session = session_factory()
+    fr = add_custom_feed(session, title="FR", language="fr")
+    add_custom_feed(session, title="EN", language="en")
+    try:
+        feeds = get_filtered_feeds(session, {"language": "fr"})
+        assert [feed.id for feed in feeds] == [fr.id]
+    finally:
+        session.close()

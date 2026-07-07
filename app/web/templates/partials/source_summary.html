@@ -1,0 +1,14 @@
+<div id="source-summary" class="card action-bar"
+     hx-get="/sources/summary" hx-trigger="sourcesChanged from:body"
+     hx-include=".filters">
+    <div><strong>{{ summary.total }}</strong><span>visible feeds</span></div>
+    <div><strong>{{ summary.enabled }}</strong><span>enabled</span></div>
+    <div><strong>{{ summary.disabled }}</strong><span>disabled</span></div>
+    <div><strong>{{ summary.fetchable }}</strong><span>fetchable</span></div>
+    <div><strong>{{ summary.needs_url_verification }}</strong><span>need URL verification</span></div>
+    <div><strong>{{ summary.success }}/{{ summary.failed }}/{{ summary.never }}</strong><span>success/failed/never</span></div>
+    <form method="post" action="/sources/bulk-enable" hx-post="/sources/bulk-enable" hx-target="#source-workspace" hx-include=".filters"><button>Enable visible fetchable feeds</button></form>
+    <form method="post" action="/sources/bulk-disable" hx-post="/sources/bulk-disable" hx-target="#source-workspace" hx-include=".filters"><button>Disable visible feeds</button></form>
+    <form method="post" action="/sources/bulk-test" hx-post="/sources/bulk-test" hx-target="#source-workspace" hx-include=".filters"><button>Test visible fetchable feeds</button></form>
+    <form method="post" action="/fetch/run" hx-post="/fetch/run" hx-target="#source-workspace" hx-include=".filters"><button>Fetch enabled feeds now</button></form>
+</div>

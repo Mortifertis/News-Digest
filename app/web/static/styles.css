@@ -105,3 +105,50 @@ th {
     background: #e5e7eb;
     color: #374151;
 }
+.filters,
+.action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.action-bar div {
+    min-width: 8rem;
+}
+
+.action-bar strong {
+    font-size: 1.4rem;
+}
+
+.action-bar span {
+    display: block;
+    color: #637083;
+    font-size: .85rem;
+}
+
+button,
+.button-link {
+    border: 0;
+    border-radius: .5rem;
+    background: #172033;
+    color: #fff;
+    cursor: pointer;
+    display: inline-block;
+    font-weight: 700;
+    padding: .45rem .7rem;
+    text-decoration: none;
+}
+
+input,
+select {
+    border: 1px solid #cbd5e1;
+    border-radius: .4rem;
+    padding: .4rem;
+}
+
+.inline-status {
+    color: #065f46;
+    font-weight: 700;
+}
