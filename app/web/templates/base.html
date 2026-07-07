@@ -1,5 +1,5 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Morti News Digest</title><link rel="stylesheet" href="/static/styles.css"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Morti News Digest</title><link rel="stylesheet" href="/static/styles.css"><script src="https://unpkg.com/htmx.org@2.0.4"></script></head>
 <body><nav><a href="/">Dashboard</a><a href="/sources">Sources</a><a href="/feed">Feed</a><a href="/review">Review</a><a href="/fetch-runs">Fetch runs</a><a href="/settings">Settings</a></nav><main>{% if message %}<p class="card">{{ message }}</p>{% endif %}{% block content %}{% endblock %}</main></body>
 </html>

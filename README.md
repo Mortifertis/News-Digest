@@ -523,3 +523,31 @@ RSS URL statuses mean:
 - `needs_verification` — the source is useful but no URL is known yet;
 - `api_or_licensed_only` — the source likely requires API or licensed access;
 - `unavailable` — no suitable RSS feed is currently available for the POC.
+
+## Source management UX
+
+The `/sources` page is designed as an operator dashboard for maintaining the
+RSS source catalog. Source filters are preserved across row actions, and HTMX
+updates rows, summaries, and bulk-action results without a full page reload.
+
+Available filters include enabled state, RSS URL status, language, country,
+category, outlet type, reliability score, bias profile, and last fetch status.
+Use **Reset filters** to clear the current query string and return to the full
+catalog.
+
+Row-level actions support enabling, disabling, testing, and saving feed URLs.
+When HTMX is available, each action replaces only the affected table row and
+refreshes the visible summary counts; without HTMX, the app redirects back to
+`/sources` while preserving the current filters in the query string.
+
+Bulk actions apply to the current filtered result set, meaning "visible" feeds
+are the feeds matching the active filters rather than every database record:
+
+- **Enable visible fetchable feeds** enables matching feeds that have a feed URL
+  and are marked fetchable, while skipping empty, unavailable, or licensed/API
+  only URLs.
+- **Disable visible feeds** disables every feed matching the active filters.
+- **Test visible fetchable feeds** synchronously probes matching fetchable feeds
+  and reports success, failure, and skipped counts. This can take some time.
+- **Fetch enabled feeds now** starts the normal manual fetch run and returns a
+  link to the fetch-run detail page when used from the sources dashboard.

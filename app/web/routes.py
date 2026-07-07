@@ -2,8 +2,9 @@ import logging
 from typing import Annotated
 from urllib.parse import parse_qs
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import distinct, func, select
 from sqlalchemy.orm import Session, joinedload
@@ -17,13 +18,24 @@ from app.db.models import (
     StoryCluster,
 )
 from app.db.session import get_session
-from app.services.rss_fetcher import fetch_enabled_feeds, test_feed_by_id
+from app.services.rss_fetcher import (
+    fetch_enabled_feeds,
+    fetch_feed,
+    test_feed_by_id,
+)
 from app.services.settings_service import (
     SETTING_SPECS,
     get_all_settings_with_defaults,
     get_int_setting,
     set_setting,
     validate_settings_payload,
+)
+from app.services.source_filters import (
+    FILTER_KEYS,
+    get_filtered_feeds,
+    normalize_filters,
+    source_filter_options,
+    source_summary,
 )
 
 router = APIRouter()
@@ -171,32 +183,68 @@ def dashboard(
     )
 
 
-def clean_filter(value: str | None) -> str | None:
-    if value is None:
-        return None
-    value = value.strip()
-    return value or None
+def _is_htmx(request: Request) -> bool:
+    return request.headers.get("HX-Request") == "true"
 
 
-def parse_enabled_filter(value: str | None) -> bool | None:
-    cleaned = clean_filter(value)
-    if cleaned in {None, "all"}:
-        return None
-    if cleaned == "enabled":
-        return True
-    if cleaned == "disabled":
-        return False
-    return None
+def _filter_values(request: Request) -> dict[str, str]:
+    return normalize_filters(dict(request.query_params))
 
 
-def parse_reliability_filter(value: str | None) -> int | None:
-    cleaned = clean_filter(value)
-    if cleaned is None:
-        return None
-    try:
-        return int(cleaned)
-    except ValueError:
-        return None
+def _query_suffix(filters: dict[str, str]) -> str:
+    pairs = [f"{key}={value}" for key, value in filters.items() if value]
+    return "&".join(pairs)
+
+
+def _sources_context(
+    session: Session,
+    filters: dict[str, str],
+    message: str | None = None,
+) -> dict:
+    feeds = get_filtered_feeds(session, filters)
+    return {
+        "feeds": feeds,
+        "message": message,
+        "filters": filters,
+        "filter_options": source_filter_options(session),
+        "summary": source_summary(feeds),
+    }
+
+
+def _source_redirect(
+    filters: dict[str, str], message: str
+) -> RedirectResponse:
+    suffix = _query_suffix(filters)
+    separator = "&" if suffix else ""
+    return RedirectResponse(
+        f"/sources?{suffix}{separator}message={message}", status_code=303
+    )
+
+
+def _row_response(
+    request: Request,
+    session: Session,
+    feed: FeedSubscription,
+    message: str,
+) -> HTMLResponse:
+    response = templates.TemplateResponse(
+        request,
+        "partials/source_row.html",
+        {"feed": feed, "message": message},
+    )
+    response.headers["HX-Trigger"] = "sourcesChanged"
+    return response
+
+
+async def _request_filters(request: Request) -> dict[str, str]:
+    values = dict(request.query_params)
+    if request.method == "POST":
+        body = (await request.body()).decode()
+        form = parse_qs(body, keep_blank_values=True)
+        values.update(
+            {key: form[key][0] for key in FILTER_KEYS if key in form}
+        )
+    return normalize_filters(values)
 
 
 @router.get("/sources")
@@ -214,114 +262,43 @@ def sources(
     bias_profile: str | None = None,
     last_fetch_status: str | None = None,
 ):
-    filters = {
-        "enabled": clean_filter(enabled) or "",
-        "url_status": clean_filter(url_status) or "",
-        "language": clean_filter(language) or "",
-        "country": clean_filter(country) or "",
-        "category": clean_filter(category) or "",
-        "outlet_type": clean_filter(outlet_type) or "",
-        "reliability_score": clean_filter(reliability_score) or "",
-        "bias_profile": clean_filter(bias_profile) or "",
-        "last_fetch_status": clean_filter(last_fetch_status) or "",
-    }
-    stmt = select(FeedSubscription).options(
-        joinedload(FeedSubscription.source)
+    filters = normalize_filters(
+        {
+            "enabled": enabled,
+            "url_status": url_status,
+            "language": language,
+            "country": country,
+            "category": category,
+            "outlet_type": outlet_type,
+            "reliability_score": reliability_score,
+            "bias_profile": bias_profile,
+            "last_fetch_status": last_fetch_status,
+        }
     )
-    enabled_value = parse_enabled_filter(enabled)
-    if enabled_value is not None:
-        stmt = stmt.where(FeedSubscription.is_enabled.is_(enabled_value))
-    allowed_url_statuses = {
-        "has_url",
-        "needs_url_verification",
-        "verified_official",
-        "candidate_pattern",
-        "api_or_licensed_only",
-        "unavailable",
-    }
-    normalized_url_status = clean_filter(url_status)
-    if normalized_url_status == "all":
-        normalized_url_status = None
-    if normalized_url_status == "needs_url_verification":
-        normalized_url_status = "needs_verification"
-    if normalized_url_status == "has_url":
-        stmt = stmt.where(FeedSubscription.feed_url.is_not(None))
-        stmt = stmt.where(FeedSubscription.feed_url != "")
-    elif normalized_url_status in allowed_url_statuses:
-        stmt = stmt.where(
-            FeedSubscription.rss_url_status == normalized_url_status
-        )
-    source_joined = False
-    if filters["language"]:
-        stmt = stmt.where(FeedSubscription.language == filters["language"])
-    if filters["country"]:
-        stmt = stmt.join(FeedSubscription.source)
-        source_joined = True
-        stmt = stmt.where(NewsSource.country == filters["country"])
-    if filters["category"]:
-        stmt = stmt.where(FeedSubscription.category == filters["category"])
-    if filters["outlet_type"]:
-        if not source_joined:
-            stmt = stmt.join(FeedSubscription.source)
-            source_joined = True
-        stmt = stmt.where(NewsSource.outlet_type == filters["outlet_type"])
-    reliability_value = parse_reliability_filter(reliability_score)
-    if reliability_value is not None:
-        if not source_joined:
-            stmt = stmt.join(FeedSubscription.source)
-            source_joined = True
-        stmt = stmt.where(
-            NewsSource.editorial_reliability_score == reliability_value
-        )
-    if filters["bias_profile"]:
-        if not source_joined:
-            stmt = stmt.join(FeedSubscription.source)
-            source_joined = True
-        stmt = stmt.where(NewsSource.bias_profile == filters["bias_profile"])
-    if filters["last_fetch_status"]:
-        stmt = stmt.where(
-            FeedSubscription.last_fetch_status == filters["last_fetch_status"]
-        )
-    feeds = (
-        session.scalars(stmt.order_by(FeedSubscription.title)).unique().all()
+    return templates.TemplateResponse(
+        request, "sources.html", _sources_context(session, filters, message)
     )
-    filter_options = {
-        "languages": session.scalars(
-            select(FeedSubscription.language).distinct().order_by(
-                FeedSubscription.language
-            )
-        ).all(),
-        "countries": session.scalars(
-            select(NewsSource.country).distinct().order_by(NewsSource.country)
-        ).all(),
-        "categories": session.scalars(
-            select(FeedSubscription.category).distinct().order_by(
-                FeedSubscription.category
-            )
-        ).all(),
-        "outlet_types": session.scalars(
-            select(NewsSource.outlet_type)
-            .where(NewsSource.outlet_type.is_not(None))
-            .distinct()
-            .order_by(NewsSource.outlet_type)
-        ).all(),
-        "bias_profiles": session.scalars(
-            select(NewsSource.bias_profile)
-            .where(NewsSource.bias_profile.is_not(None))
-            .distinct()
-            .order_by(NewsSource.bias_profile)
-        ).all(),
-    }
+
+
+@router.get("/sources/table")
+def sources_table(request: Request, session: SessionDep):
+    filters = _filter_values(request)
     return templates.TemplateResponse(
         request,
-        "sources.html",
-        {
-            "feeds": feeds,
-            "message": message,
-            "filters": filters,
-            "filter_options": filter_options,
-        },
+        "partials/source_table.html",
+        _sources_context(session, filters),
     )
+
+
+@router.get("/sources/summary")
+def sources_summary(request: Request, session: SessionDep):
+    filters = _filter_values(request)
+    return templates.TemplateResponse(
+        request,
+        "partials/source_summary.html",
+        _sources_context(session, filters),
+    )
+
 
 @router.post("/sources/{feed_id}/url")
 async def save_source_url(
@@ -329,6 +306,7 @@ async def save_source_url(
     feed_id: int,
     session: SessionDep,
 ):
+    filters = await _request_filters(request)
     allowed = {
         "verified_official",
         "candidate_pattern",
@@ -337,18 +315,18 @@ async def save_source_url(
         "api_or_licensed_only",
         "unavailable",
     }
-    body = (await request.body()).decode()
-    form = parse_qs(body, keep_blank_values=True)
+    form = parse_qs((await request.body()).decode(), keep_blank_values=True)
     feed_url = form.get("feed_url", [""])[0]
-    rss_url_status = form.get(
-        "rss_url_status", ["candidate_pattern"]
-    )[0]
+    rss_url_status = form.get("rss_url_status", ["candidate_pattern"])[0]
     feed = session.get(FeedSubscription, feed_id)
     if feed is None:
         raise HTTPException(status_code=404, detail="Feed not found")
     url = feed_url.strip()
     if url and not (url.startswith("http://") or url.startswith("https://")):
-        return redirect("/sources", "Invalid feed URL")
+        message = "Invalid feed URL"
+        if _is_htmx(request):
+            return _row_response(request, session, feed, message)
+        return _source_redirect(filters, message)
     if rss_url_status == "needs_url_verification":
         rss_url_status = "needs_verification"
     if rss_url_status not in allowed:
@@ -362,61 +340,189 @@ async def save_source_url(
     if not feed.feed_url:
         feed.is_enabled = False
     session.commit()
-    return redirect("/sources", "Feed URL saved")
+    session.refresh(feed)
+    if _is_htmx(request):
+        return _row_response(request, session, feed, "Feed URL saved")
+    return _source_redirect(filters, "Feed URL saved")
 
 
 @router.post("/sources/{feed_id}/enable")
-def enable_source(feed_id: int, session: SessionDep):
+async def enable_source(request: Request, feed_id: int, session: SessionDep):
+    filters = await _request_filters(request)
     try:
         feed = session.get(FeedSubscription, feed_id)
         if feed is None:
             raise HTTPException(status_code=404, detail="Feed not found")
+        message = "Feed enabled"
         if not feed.feed_url:
-            return redirect("/sources", "Feed needs URL verification")
-        feed.is_enabled = True
-        session.commit()
-        return redirect("/sources", "Feed enabled")
+            message = "Cannot enable feed without RSS URL"
+        else:
+            feed.is_enabled = True
+            session.commit()
+            session.refresh(feed)
+        if _is_htmx(request):
+            return _row_response(request, session, feed, message)
+        return _source_redirect(filters, message)
     except HTTPException:
         raise
     except Exception:
         logger.exception("Enable feed failed")
-        return redirect("/sources", "Enable feed failed")
+        return _source_redirect(filters, "Enable feed failed")
 
 
 @router.post("/sources/{feed_id}/disable")
-def disable_source(feed_id: int, session: SessionDep):
+async def disable_source(request: Request, feed_id: int, session: SessionDep):
+    filters = await _request_filters(request)
     try:
         feed = session.get(FeedSubscription, feed_id)
         if feed is None:
             raise HTTPException(status_code=404, detail="Feed not found")
         feed.is_enabled = False
         session.commit()
-        return redirect("/sources", "Feed disabled")
+        session.refresh(feed)
+        if _is_htmx(request):
+            return _row_response(request, session, feed, "Feed disabled")
+        return _source_redirect(filters, "Feed disabled")
     except HTTPException:
         raise
     except Exception:
         logger.exception("Disable feed failed")
-        return redirect("/sources", "Disable feed failed")
+        return _source_redirect(filters, "Disable feed failed")
 
 
 @router.post("/sources/{feed_id}/test")
-def test_source(feed_id: int, session: SessionDep):
+async def test_source(request: Request, feed_id: int, session: SessionDep):
+    filters = await _request_filters(request)
     try:
         result = test_feed_by_id(session, feed_id)
-        return redirect("/sources", f"Test finished: {result.status}")
+        feed = session.get(FeedSubscription, feed_id)
+        if result.status == "success":
+            message = f"Feed test succeeded: {result.entries_count} entries"
+        else:
+            message = f"Feed test failed: {result.error or result.status}"
+        if _is_htmx(request):
+            return _row_response(request, session, feed, message)
+        return _source_redirect(filters, message)
     except Exception:
         logger.exception("Test feed failed")
-        return redirect("/sources", "Test feed failed")
+        return _source_redirect(filters, "Test feed failed")
+
+
+_BULK_SKIP_STATUSES = {"api_or_licensed_only", "unavailable"}
+
+
+def _bulk_feeds(session: Session, filters: dict[str, str]) -> list:
+    return get_filtered_feeds(session, filters)
+
+
+@router.post("/sources/bulk-enable")
+async def bulk_enable_sources(request: Request, session: SessionDep):
+    filters = await _request_filters(request)
+    feeds = _bulk_feeds(session, filters)
+    enabled_count = 0
+    skipped_count = 0
+    for feed_item in feeds:
+        if (
+            not feed_item.feed_url
+            or not feed_item.fetchable
+            or feed_item.rss_url_status in _BULK_SKIP_STATUSES
+        ):
+            skipped_count += 1
+            continue
+        if not feed_item.is_enabled:
+            enabled_count += 1
+        feed_item.is_enabled = True
+    session.commit()
+    message = (
+        f"Enabled {enabled_count} visible fetchable feeds; "
+        f"skipped {skipped_count}."
+    )
+    if _is_htmx(request):
+        return templates.TemplateResponse(
+            request,
+            "partials/source_workspace.html",
+            _sources_context(session, filters, message),
+        )
+    return _source_redirect(filters, message)
+
+
+@router.post("/sources/bulk-disable")
+async def bulk_disable_sources(request: Request, session: SessionDep):
+    filters = await _request_filters(request)
+    feeds = _bulk_feeds(session, filters)
+    disabled_count = 0
+    for feed_item in feeds:
+        if feed_item.is_enabled:
+            disabled_count += 1
+        feed_item.is_enabled = False
+    session.commit()
+    message = f"Disabled {disabled_count} visible feeds."
+    if _is_htmx(request):
+        return templates.TemplateResponse(
+            request,
+            "partials/source_workspace.html",
+            _sources_context(session, filters, message),
+        )
+    return _source_redirect(filters, message)
+
+
+@router.post("/sources/bulk-test")
+async def bulk_test_sources(request: Request, session: SessionDep):
+    filters = await _request_filters(request)
+    feeds = [
+        feed_item
+        for feed_item in _bulk_feeds(session, filters)
+        if feed_item.feed_url and feed_item.fetchable
+    ]
+    skipped_count = len(_bulk_feeds(session, filters)) - len(feeds)
+    success_count = 0
+    failed_count = 0
+    with httpx.Client(timeout=20.0, follow_redirects=True) as client:
+        for feed_item in feeds:
+            result = fetch_feed(session, client, feed_item)
+            if result.status == "success":
+                success_count += 1
+            else:
+                failed_count += 1
+    message = (
+        "Bulk test may take some time. "
+        f"Tested {len(feeds)} visible fetchable feeds: "
+        f"{success_count} succeeded, {failed_count} failed, "
+        f"{skipped_count} skipped."
+    )
+    if _is_htmx(request):
+        return templates.TemplateResponse(
+            request,
+            "partials/source_workspace.html",
+            _sources_context(session, filters, message),
+        )
+    return _source_redirect(filters, message)
 
 
 @router.post("/fetch/run")
-def fetch_run(session: SessionDep):
+async def fetch_run(request: Request, session: SessionDep):
+    filters = await _request_filters(request)
     try:
         run = fetch_enabled_feeds(session, mode="manual")
+        message = (
+            f'Fetch run created: <a href="/fetch-runs/{run.id}">view run</a>.'
+        )
+        if _is_htmx(request):
+            return templates.TemplateResponse(
+                request,
+                "partials/source_workspace.html",
+                _sources_context(session, filters, message),
+            )
         return RedirectResponse(f"/fetch-runs/{run.id}", status_code=303)
     except Exception:
         logger.exception("Fetch run failed")
-        return redirect("/fetch-runs", "Fetch run failed")
+        if _is_htmx(request):
+            return templates.TemplateResponse(
+                request,
+                "partials/source_flash.html",
+                {"message": "Fetch run failed"},
+            )
+        return _source_redirect(filters, "Fetch run failed")
 
 
 @router.get("/feed")
@@ -431,9 +537,10 @@ def feed(
     sort: str | None = None,
 ):
     if language is None:
-        language = get_all_settings_with_defaults(session)[
-            "default_language_filter"
-        ] or None
+        language = (
+            get_all_settings_with_defaults(session)["default_language_filter"]
+            or None
+        )
     if sort is None:
         sort = get_all_settings_with_defaults(session)["default_feed_sort"]
     filters = {
@@ -553,6 +660,7 @@ async def save_settings(request: Request, session: SessionDep):
         logger.exception("Settings save failed")
         return redirect("/settings", "Settings save failed")
     return redirect("/settings", "Settings saved")
+
 
 @router.get("/clusters/{cluster_id}")
 def cluster_detail(cluster_id: int, request: Request, session: SessionDep):
