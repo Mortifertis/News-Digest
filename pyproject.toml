@@ -34,3 +34,10 @@ pythonpath = ["."]
 [tool.setuptools.packages.find]
 include = ["app*"]
 exclude = ["fixtures*", "tests*"]
+
+[tool.isort]
+profile = "black"
+line_length = 79
+
+[tool.setuptools.package-data]
+"app.services" = ["source_catalog.json"]

@@ -1,0 +1,2167 @@
+[
+  {
+    "source_name": "BBC News",
+    "language": "en",
+    "country": "United Kingdom",
+    "homepage_url": "https://www.bbc.com/news",
+    "feed_title": "BBC World",
+    "feed_url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+    "category": "world",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "BBC News",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "public",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "world"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "BBC News",
+    "language": "en",
+    "country": "United Kingdom",
+    "homepage_url": "https://www.bbc.com/news",
+    "feed_title": "BBC UK",
+    "feed_url": "https://feeds.bbci.co.uk/news/uk/rss.xml",
+    "category": "politics",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "BBC News",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "public",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "uk"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "BBC News",
+    "language": "en",
+    "country": "United Kingdom",
+    "homepage_url": "https://www.bbc.com/news",
+    "feed_title": "BBC Business",
+    "feed_url": "https://feeds.bbci.co.uk/news/business/rss.xml",
+    "category": "business",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "BBC News",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "public",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "business"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "BBC News",
+    "language": "en",
+    "country": "United Kingdom",
+    "homepage_url": "https://www.bbc.com/news",
+    "feed_title": "BBC Technology",
+    "feed_url": "https://feeds.bbci.co.uk/news/technology/rss.xml",
+    "category": "technology",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "BBC News",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "public",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "technology"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "BBC News",
+    "language": "en",
+    "country": "United Kingdom",
+    "homepage_url": "https://www.bbc.com/news",
+    "feed_title": "BBC Science & Environment",
+    "feed_url": "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
+    "category": "science",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "BBC News",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "public",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "science",
+      "climate"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "The Guardian",
+    "language": "en",
+    "country": "United Kingdom",
+    "homepage_url": "https://www.theguardian.com/international",
+    "feed_title": "The Guardian World",
+    "feed_url": "https://www.theguardian.com/world/rss",
+    "category": "world",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "The Guardian",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "lean_left",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "world"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "The Guardian",
+    "language": "en",
+    "country": "United Kingdom",
+    "homepage_url": "https://www.theguardian.com/international",
+    "feed_title": "The Guardian UK",
+    "feed_url": "https://www.theguardian.com/uk/rss",
+    "category": "politics",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "The Guardian",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "lean_left",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "uk"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "The Guardian",
+    "language": "en",
+    "country": "United Kingdom",
+    "homepage_url": "https://www.theguardian.com/international",
+    "feed_title": "The Guardian US",
+    "feed_url": "https://www.theguardian.com/us-news/rss",
+    "category": "us",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "The Guardian",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "lean_left",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "us"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "The Guardian",
+    "language": "en",
+    "country": "United Kingdom",
+    "homepage_url": "https://www.theguardian.com/international",
+    "feed_title": "The Guardian Europe",
+    "feed_url": "https://www.theguardian.com/world/europe-news/rss",
+    "category": "europe",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "The Guardian",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "lean_left",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "europe"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "The Guardian",
+    "language": "en",
+    "country": "United Kingdom",
+    "homepage_url": "https://www.theguardian.com/international",
+    "feed_title": "The Guardian Technology",
+    "feed_url": "https://www.theguardian.com/technology/rss",
+    "category": "technology",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "The Guardian",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "lean_left",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "technology"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "The Guardian",
+    "language": "en",
+    "country": "United Kingdom",
+    "homepage_url": "https://www.theguardian.com/international",
+    "feed_title": "The Guardian Business",
+    "feed_url": "https://www.theguardian.com/business/rss",
+    "category": "business",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "The Guardian",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "lean_left",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "business"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "The Guardian",
+    "language": "en",
+    "country": "United Kingdom",
+    "homepage_url": "https://www.theguardian.com/international",
+    "feed_title": "The Guardian Culture",
+    "feed_url": "https://www.theguardian.com/culture/rss",
+    "category": "culture",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "The Guardian",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "lean_left",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "culture"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "The Guardian",
+    "language": "en",
+    "country": "United Kingdom",
+    "homepage_url": "https://www.theguardian.com/international",
+    "feed_title": "The Guardian Environment",
+    "feed_url": "https://www.theguardian.com/environment/rss",
+    "category": "climate",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "The Guardian",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "lean_left",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "climate"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "The Guardian",
+    "language": "en",
+    "country": "United Kingdom",
+    "homepage_url": "https://www.theguardian.com/international",
+    "feed_title": "The Guardian Football",
+    "feed_url": "https://www.theguardian.com/football/rss",
+    "category": "sports",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "The Guardian",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "lean_left",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "football"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "France 24 English",
+    "language": "en",
+    "country": "France",
+    "homepage_url": "https://www.france24.com/en/",
+    "feed_title": "France 24 English",
+    "feed_url": "https://www.france24.com/en/rss",
+    "category": "world",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "France 24 English",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "state-funded",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "world"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "Euronews English",
+    "language": "en",
+    "country": "France",
+    "homepage_url": "https://www.euronews.com/",
+    "feed_title": "Euronews English News",
+    "feed_url": "https://www.euronews.com/rss?format=mrss&level=theme&name=news",
+    "category": "world",
+    "priority": 4,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "Euronews English",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "private_broadcaster",
+    "ownership_type": "mixed",
+    "paywall_level": "free",
+    "editorial_reliability_score": 4,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 4,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "world"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "Euronews English",
+    "language": "en",
+    "country": "France",
+    "homepage_url": "https://www.euronews.com/",
+    "feed_title": "Euronews English Next",
+    "feed_url": "https://www.euronews.com/rss?format=mrss&level=vertical&name=next",
+    "category": "technology",
+    "priority": 4,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "Euronews English",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "private_broadcaster",
+    "ownership_type": "mixed",
+    "paywall_level": "free",
+    "editorial_reliability_score": 4,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 4,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "technology"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "Euronews English",
+    "language": "en",
+    "country": "France",
+    "homepage_url": "https://www.euronews.com/",
+    "feed_title": "Euronews English Green",
+    "feed_url": "https://www.euronews.com/rss?format=mrss&level=vertical&name=green",
+    "category": "climate",
+    "priority": 4,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "Euronews English",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "private_broadcaster",
+    "ownership_type": "mixed",
+    "paywall_level": "free",
+    "editorial_reliability_score": 4,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 4,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "climate"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "CBC News",
+    "language": "en",
+    "country": "Canada",
+    "homepage_url": "https://www.cbc.ca/news",
+    "feed_title": "CBC Top Stories",
+    "feed_url": "https://www.cbc.ca/webfeed/rss/rss-topstories",
+    "category": "general",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "CBC News",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "North America",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "public",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "canada"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "CBC News",
+    "language": "en",
+    "country": "Canada",
+    "homepage_url": "https://www.cbc.ca/news",
+    "feed_title": "CBC World",
+    "feed_url": "https://www.cbc.ca/webfeed/rss/rss-world",
+    "category": "world",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "CBC News",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "North America",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "public",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "world"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "CBC News",
+    "language": "en",
+    "country": "Canada",
+    "homepage_url": "https://www.cbc.ca/news",
+    "feed_title": "CBC Canada",
+    "feed_url": "https://www.cbc.ca/webfeed/rss/rss-canada",
+    "category": "canada",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "CBC News",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "North America",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "public",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "canada"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "CBC News",
+    "language": "en",
+    "country": "Canada",
+    "homepage_url": "https://www.cbc.ca/news",
+    "feed_title": "CBC Politics",
+    "feed_url": "https://www.cbc.ca/webfeed/rss/rss-politics",
+    "category": "politics",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "CBC News",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "North America",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "public",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "politics"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "CBC News",
+    "language": "en",
+    "country": "Canada",
+    "homepage_url": "https://www.cbc.ca/news",
+    "feed_title": "CBC Business",
+    "feed_url": "https://www.cbc.ca/webfeed/rss/rss-business",
+    "category": "business",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "CBC News",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "North America",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "public",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "business"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "CBC News",
+    "language": "en",
+    "country": "Canada",
+    "homepage_url": "https://www.cbc.ca/news",
+    "feed_title": "CBC Technology & Science",
+    "feed_url": "https://www.cbc.ca/webfeed/rss/rss-technology",
+    "category": "technology",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "CBC News",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "North America",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "public",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "technology",
+      "science"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "NPR",
+    "language": "en",
+    "country": "United States",
+    "homepage_url": "https://www.npr.org/",
+    "feed_title": "NPR News",
+    "feed_url": "https://feeds.npr.org/1001/rss.xml",
+    "category": "general",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "NPR",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "North America",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "nonprofit",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "us"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "NPR",
+    "language": "en",
+    "country": "United States",
+    "homepage_url": "https://www.npr.org/",
+    "feed_title": "NPR World",
+    "feed_url": "https://feeds.npr.org/1004/rss.xml",
+    "category": "world",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "NPR",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "North America",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "nonprofit",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "world"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "NPR",
+    "language": "en",
+    "country": "United States",
+    "homepage_url": "https://www.npr.org/",
+    "feed_title": "NPR Politics",
+    "feed_url": "https://feeds.npr.org/1014/rss.xml",
+    "category": "politics",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "NPR",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "North America",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "nonprofit",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "politics"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "NPR",
+    "language": "en",
+    "country": "United States",
+    "homepage_url": "https://www.npr.org/",
+    "feed_title": "NPR Business",
+    "feed_url": "https://feeds.npr.org/1006/rss.xml",
+    "category": "business",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "NPR",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "North America",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "nonprofit",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "business"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "NPR",
+    "language": "en",
+    "country": "United States",
+    "homepage_url": "https://www.npr.org/",
+    "feed_title": "NPR Technology",
+    "feed_url": "https://feeds.npr.org/1019/rss.xml",
+    "category": "technology",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "NPR",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "North America",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "nonprofit",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "technology"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "NPR",
+    "language": "en",
+    "country": "United States",
+    "homepage_url": "https://www.npr.org/",
+    "feed_title": "NPR Science",
+    "feed_url": "https://feeds.npr.org/1007/rss.xml",
+    "category": "science",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "NPR",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "North America",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "nonprofit",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "science"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "NPR",
+    "language": "en",
+    "country": "United States",
+    "homepage_url": "https://www.npr.org/",
+    "feed_title": "NPR Culture",
+    "feed_url": "https://feeds.npr.org/1008/rss.xml",
+    "category": "culture",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "NPR",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "North America",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "nonprofit",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "culture"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "Al Jazeera English",
+    "language": "en",
+    "country": "Qatar",
+    "homepage_url": "https://www.aljazeera.com/",
+    "feed_title": "Al Jazeera English",
+    "feed_url": "https://www.aljazeera.com/xml/rss/all.xml",
+    "category": "world",
+    "priority": 4,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "Al Jazeera English",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Middle East",
+    "outlet_type": "private_broadcaster",
+    "ownership_type": "state-funded",
+    "paywall_level": "free",
+    "editorial_reliability_score": 4,
+    "bias_profile": "state_perspective",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 4,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "world",
+      "middle_east"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "Deutsche Welle English",
+    "language": "en",
+    "country": "Germany",
+    "homepage_url": "https://www.dw.com/en/",
+    "feed_title": "DW English",
+    "feed_url": "https://rss.dw.com/xml/rss-en-all",
+    "category": "world",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "Deutsche Welle English",
+    "language_primary": "en",
+    "languages_available": [
+      "en"
+    ],
+    "region": "Europe",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "state-funded",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "world",
+      "europe"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "France 24 Français",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.france24.com/fr/",
+    "feed_title": "France 24 Français",
+    "feed_url": "https://www.france24.com/fr/rss",
+    "category": "world",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "France 24 Français",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "state-funded",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "world",
+      "france"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "Le Monde",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.lemonde.fr/",
+    "feed_title": "Le Monde International",
+    "feed_url": "https://www.lemonde.fr/international/rss_full.xml",
+    "category": "world",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "Le Monde",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "world"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": "Le Monde RSS feeds are for personal, non-professional, non-collective use; other uses require authorization.",
+    "fetchable": true
+  },
+  {
+    "source_name": "Le Monde",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.lemonde.fr/",
+    "feed_title": "Le Monde Politique",
+    "feed_url": "https://www.lemonde.fr/politique/rss_full.xml",
+    "category": "politics",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "Le Monde",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "politics"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": "Le Monde RSS feeds are for personal, non-professional, non-collective use; other uses require authorization.",
+    "fetchable": true
+  },
+  {
+    "source_name": "Le Monde",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.lemonde.fr/",
+    "feed_title": "Le Monde Économie",
+    "feed_url": "https://www.lemonde.fr/economie/rss_full.xml",
+    "category": "business",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "Le Monde",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "business"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": "Le Monde RSS feeds are for personal, non-professional, non-collective use; other uses require authorization.",
+    "fetchable": true
+  },
+  {
+    "source_name": "Le Monde",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.lemonde.fr/",
+    "feed_title": "Le Monde Culture",
+    "feed_url": "https://www.lemonde.fr/culture/rss_full.xml",
+    "category": "culture",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "Le Monde",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "culture"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": "Le Monde RSS feeds are for personal, non-professional, non-collective use; other uses require authorization.",
+    "fetchable": true
+  },
+  {
+    "source_name": "Le Monde",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.lemonde.fr/",
+    "feed_title": "Le Monde Sciences",
+    "feed_url": "https://www.lemonde.fr/sciences/rss_full.xml",
+    "category": "science",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "Le Monde",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "science"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": "Le Monde RSS feeds are for personal, non-professional, non-collective use; other uses require authorization.",
+    "fetchable": true
+  },
+  {
+    "source_name": "Le Monde",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.lemonde.fr/",
+    "feed_title": "Le Monde Pixels",
+    "feed_url": "https://www.lemonde.fr/pixels/rss_full.xml",
+    "category": "technology",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "Le Monde",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "technology"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": "Le Monde RSS feeds are for personal, non-professional, non-collective use; other uses require authorization.",
+    "fetchable": true
+  },
+  {
+    "source_name": "Le Monde",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.lemonde.fr/",
+    "feed_title": "Le Monde Sport",
+    "feed_url": "https://www.lemonde.fr/sport/rss_full.xml",
+    "category": "sports",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "Le Monde",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "sports"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": "Le Monde RSS feeds are for personal, non-professional, non-collective use; other uses require authorization.",
+    "fetchable": true
+  },
+  {
+    "source_name": "Le Monde",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.lemonde.fr/",
+    "feed_title": "Le Monde Planète",
+    "feed_url": "https://www.lemonde.fr/planete/rss_full.xml",
+    "category": "climate",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "Le Monde",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "climate"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": "Le Monde RSS feeds are for personal, non-professional, non-collective use; other uses require authorization.",
+    "fetchable": true
+  },
+  {
+    "source_name": "Le Monde",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.lemonde.fr/",
+    "feed_title": "Le Monde Idées",
+    "feed_url": "https://www.lemonde.fr/idees/rss_full.xml",
+    "category": "opinion",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "Le Monde",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "newspaper",
+    "ownership_type": "private",
+    "paywall_level": "partial",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "opinion"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": "Le Monde RSS feeds are for personal, non-professional, non-collective use; other uses require authorization.",
+    "fetchable": true
+  },
+  {
+    "source_name": "RFI Français",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.rfi.fr/fr/",
+    "feed_title": "RFI Français",
+    "feed_url": "https://www.rfi.fr/fr/rss",
+    "category": "world",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "RFI Français",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "state-funded",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "world"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "RFI Français",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.rfi.fr/fr/",
+    "feed_title": "RFI Afrique",
+    "feed_url": "https://www.rfi.fr/fr/afrique/rss",
+    "category": "africa",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "RFI Français",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "state-funded",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "africa"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "RFI Français",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.rfi.fr/fr/",
+    "feed_title": "RFI Europe",
+    "feed_url": "https://www.rfi.fr/fr/europe/rss",
+    "category": "europe",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "RFI Français",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "state-funded",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "europe"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "RFI Français",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.rfi.fr/fr/",
+    "feed_title": "RFI France",
+    "feed_url": "https://www.rfi.fr/fr/france/rss",
+    "category": "france",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "RFI Français",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "state-funded",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "france"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "RFI Français",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.rfi.fr/fr/",
+    "feed_title": "RFI Économie",
+    "feed_url": "https://www.rfi.fr/fr/economie/rss",
+    "category": "business",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "RFI Français",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "state-funded",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "business"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "RFI Français",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.rfi.fr/fr/",
+    "feed_title": "RFI Culture",
+    "feed_url": "https://www.rfi.fr/fr/culture/rss",
+    "category": "culture",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "RFI Français",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "state-funded",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "culture"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "RFI Français",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.rfi.fr/fr/",
+    "feed_title": "RFI Sports",
+    "feed_url": "https://www.rfi.fr/fr/sports/rss",
+    "category": "sports",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "RFI Français",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "state-funded",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "sports"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "RFI Français",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://www.rfi.fr/fr/",
+    "feed_title": "RFI Science",
+    "feed_url": "https://www.rfi.fr/fr/science/rss",
+    "category": "science",
+    "priority": 5,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "RFI Français",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "public_broadcaster",
+    "ownership_type": "state-funded",
+    "paywall_level": "free",
+    "editorial_reliability_score": 5,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 5,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "science"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "Euronews Français",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://fr.euronews.com/",
+    "feed_title": "Euronews Français Info",
+    "feed_url": "https://fr.euronews.com/rss?format=mrss&level=theme&name=news",
+    "category": "world",
+    "priority": 4,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "Euronews Français",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "private_broadcaster",
+    "ownership_type": "mixed",
+    "paywall_level": "free",
+    "editorial_reliability_score": 4,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 4,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "world"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "Euronews Français",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://fr.euronews.com/",
+    "feed_title": "Euronews Français Next",
+    "feed_url": "https://fr.euronews.com/rss?format=mrss&level=vertical&name=next",
+    "category": "technology",
+    "priority": 4,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "Euronews Français",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "private_broadcaster",
+    "ownership_type": "mixed",
+    "paywall_level": "free",
+    "editorial_reliability_score": 4,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 4,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "technology"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  },
+  {
+    "source_name": "Euronews Français",
+    "language": "fr",
+    "country": "France",
+    "homepage_url": "https://fr.euronews.com/",
+    "feed_title": "Euronews Français Green",
+    "feed_url": "https://fr.euronews.com/rss?format=mrss&level=vertical&name=green",
+    "category": "climate",
+    "priority": 4,
+    "notes": "Needs verification",
+    "enabled_by_default": false,
+    "display_name": "Euronews Français",
+    "language_primary": "fr",
+    "languages_available": [
+      "fr"
+    ],
+    "region": "Europe",
+    "outlet_type": "private_broadcaster",
+    "ownership_type": "mixed",
+    "paywall_level": "free",
+    "editorial_reliability_score": 4,
+    "bias_profile": "center",
+    "rating_confidence": "medium",
+    "rating_notes": "Editorial reliability heuristic, not a truth guarantee. Verify before production use.",
+    "default_priority": 4,
+    "tags": [
+      "world",
+      "politics"
+    ],
+    "feed_tags": [
+      "climate"
+    ],
+    "is_official_url": "true",
+    "url_confidence": "high",
+    "rss_url_status": "verified_official",
+    "rss_url_checked_at": null,
+    "rss_url_source_note": "Needs verification",
+    "terms_note": null,
+    "fetchable": true
+  }
+]
